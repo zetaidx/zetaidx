@@ -25,3 +25,7 @@ The main functions we need to implement on the contract are `wrap` and `unwrap`.
 `wrap` will take custody of the ERC20 assets at the ratio specified from the user and mint our token.
 
 `unwrap` will return those assets to the user.
+
+### Liquidity
+
+Most users would not want to take the time to do deposits on all networks and wrap/unwrap tokens. We should also consider deploy liquidity pools which allow easy onboarding. Pricing this swap will be challenging especially with low volume.
