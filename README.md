@@ -16,7 +16,7 @@ It should be ERC20 compatible for easy use in wallets.
 
 Each deployment of the contract should accept any number of ERC20s and their ratios. This will make it easy to test and demo in testnet as we can just deploy some mock ERC20s that have unlimited minting.
 
-Anyone should be able to deploy an instance of this contract with whatever ratio they want.
+Anyone should be able to deploy an instance of this contract with whatever ratio they want. The ratios will be fixed in the v1 deployment.
 
 ### Wrap/Unwrap
 
