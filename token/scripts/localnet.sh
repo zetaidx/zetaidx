@@ -13,6 +13,3 @@ UNISWAP_ROUTER=$(jq -r '.addresses[] | select(.type=="uniswapRouterInstance" and
 
 CONTRACT_ZETACHAIN=$(npx hardhat token:deploy --name ZetaIdxUniversalToken --network localhost --gateway "$GATEWAY_ZETACHAIN" --uniswap-router "$UNISWAP_ROUTER" --json | jq -r '.contractAddress')
 echo -e "\n🚀 Deployed ZetaIdxUniversalToken contract on ZetaChain: $CONTRACT_ZETACHAIN"
-
-
-npx hardhat localnet-stop
