@@ -4,7 +4,7 @@ set -e
 set -x
 set -o pipefail
 
-npx hardhat localnet --exit-on-error & sleep 25
+npx hardhat localnet --exit-on-error --skip solana,sui & sleep 25
 echo -e "\n🚀 Compiling contracts..."
 npx hardhat compile --force --quiet
 

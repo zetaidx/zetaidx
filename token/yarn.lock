@@ -2484,10 +2484,10 @@
     typescript "5.5.4"
     zod "3.22.4"
 
-"@zetachain/localnet@7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@zetachain/localnet/-/localnet-7.0.0.tgz#ec40a2424b0d3d7095e094696738f09a19ccde4f"
-  integrity sha512-UE/EaOB8U1VuxnHFK4oaZvSYv8eypHoUrOIb6B0Hr0B7uRKZcFcsukqMg/ApuV7alGC20+1tphVIVbk/4xOvvQ==
+"@zetachain/localnet@8.0.0-rc2":
+  version "8.0.0-rc2"
+  resolved "https://registry.yarnpkg.com/@zetachain/localnet/-/localnet-8.0.0-rc2.tgz#de1f4cc3165ffd474d9b81bbd15943390b6df71b"
+  integrity sha512-Tp0ElzH32Bwqs1SQz0U5ZAu+CymPB+970cuKmVA6cZBQXr1mkC+5XzkXs9aqaUj/UYMlu9OLrhJPEBaHx4gwew==
   dependencies:
     "@coral-xyz/anchor" "^0.30.1"
     "@inquirer/prompts" "^5.5.0"
@@ -2496,10 +2496,11 @@
     "@solana/web3.js" "^1.95.4"
     "@uniswap/v2-core" "^1.0.1"
     "@uniswap/v2-periphery" "^1.1.0-beta.0"
-    "@zetachain/protocol-contracts" "11.0.0"
+    "@zetachain/protocol-contracts" "12.0.0"
     ansis "^3.3.2"
     bip39 "^3.1.0"
     bs58 "^6.0.0"
+    commander "^13.1.0"
     concurrently "^8.2.2"
     ed25519-hd-key "^1.3.0"
     elliptic "6.5.7"
@@ -2510,6 +2511,7 @@
     simple-git "^3.27.0"
     sudo-prompt "^9.2.1"
     wait-on "^7.2.0"
+    zod "^3.24.2"
 
 "@zetachain/networks@13.0.0-rc1":
   version "13.0.0-rc1"
@@ -2537,16 +2539,6 @@
     ethereumjs-util "^7.1.5"
     secp256k1 "^5.0.0"
 
-"@zetachain/protocol-contracts@11.0.0":
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/@zetachain/protocol-contracts/-/protocol-contracts-11.0.0.tgz#4889044ae2f5db3f38d052a869775d17798f273e"
-  integrity sha512-BKkLLru4ZJzOh0G2kBYqzjzvb6nvH8c/FlT0Py4f5TAMnrw4h5PnhKMJbWjznv+e2LJ/I9PPpCeqB9zPfGoJPA==
-  dependencies:
-    "@openzeppelin/contracts" "^5.0.2"
-    "@openzeppelin/contracts-upgradeable" "^5.0.2"
-    "@zetachain/networks" "^10.0.0"
-    ethers "5.6.8"
-
 "@zetachain/protocol-contracts@11.0.0-rc3":
   version "11.0.0-rc3"
   resolved "https://registry.yarnpkg.com/@zetachain/protocol-contracts/-/protocol-contracts-11.0.0-rc3.tgz#9b719391d0728fd1b4e046c5f496180a45ecf0d5"
@@ -2561,6 +2553,16 @@
   version "11.0.0-rc4"
   resolved "https://registry.yarnpkg.com/@zetachain/protocol-contracts/-/protocol-contracts-11.0.0-rc4.tgz#2e2df98734793873e9c50629f6ec9f5eec6f9f54"
   integrity sha512-7MJzEyUad7JgHucveIhtU8aaPkoMMzsfhKkh9MDMdxUzlaOmmxrQw2hi5B2b7UPxw2K9vFffkmIox6gd6c1+Yw==
+  dependencies:
+    "@openzeppelin/contracts" "^5.0.2"
+    "@openzeppelin/contracts-upgradeable" "^5.0.2"
+    "@zetachain/networks" "^10.0.0"
+    ethers "5.6.8"
+
+"@zetachain/protocol-contracts@12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@zetachain/protocol-contracts/-/protocol-contracts-12.0.0.tgz#42897490f4ec798213e5ef06dcc464a21f944771"
+  integrity sha512-NfrKdMI4nIXcIY/VK7kP2nWEUxlqL99g8LRasiUj2jzQiRuHT6n2NSWxv0kaBVSIyAL4Bau/qp1IriuZgW19CA==
   dependencies:
     "@openzeppelin/contracts" "^5.0.2"
     "@openzeppelin/contracts-upgradeable" "^5.0.2"
@@ -3536,6 +3538,11 @@ commander@^12.1.0:
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-12.1.0.tgz#01423b36f501259fdaac4d0e4d60c96c991585d3"
   integrity sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==
+
+commander@^13.1.0:
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-13.1.0.tgz#776167db68c78f38dcce1f9b8d7b8b9a488abf46"
+  integrity sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==
 
 commander@^2.20.3:
   version "2.20.3"
@@ -8212,7 +8219,7 @@ zod@3.22.4:
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
-zod@^3.21.4:
+zod@^3.21.4, zod@^3.24.2:
   version "3.24.2"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.24.2.tgz#8efa74126287c675e92f46871cfc8d15c34372b3"
   integrity sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==
