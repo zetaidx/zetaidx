@@ -18,7 +18,7 @@ Each deployment of the contract should accept any number of ERC20s and their rat
 
 Anyone should be able to deploy an instance of this contract with whatever ratio they want.
 
-### Wrap/Unrap
+### Wrap/Unwrap
 
 The main functions we need to implement on the contract are `wrap` and `unwrap`.
 
