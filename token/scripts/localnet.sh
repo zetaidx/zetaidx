@@ -13,3 +13,20 @@ UNISWAP_ROUTER=$(jq -r '.addresses[] | select(.type=="uniswapRouterInstance" and
 
 CONTRACT_ZETACHAIN=$(npx hardhat token:deploy --name ZetaIdxUniversalToken --network localhost --gateway "$GATEWAY_ZETACHAIN" --uniswap-router "$UNISWAP_ROUTER" --json | jq -r '.contractAddress')
 echo -e "\n🚀 Deployed ZetaIdxUniversalToken contract on ZetaChain: $CONTRACT_ZETACHAIN"
+
+# Deploy test tokens and capture their addresses
+echo -e "\n🚀 Deploying test tokens..."
+TOKEN_LIST=$(npx hardhat deployTestTokens --network localhost 2>&1 | tail -n 1)
+
+# Initialize index with the deployed tokens
+echo -e "\n🚀 Initializing index with deployed tokens..."
+npx hardhat initializeIndex \
+  --contract $CONTRACT_ZETACHAIN \
+  --tokens "$TOKEN_LIST" \
+  --ratios 50,30,20 \
+  --network localhost
+
+# Only stop localnet if setup-only argument is passed
+if [ "$1" = "setup-only" ]; then
+    npx hardhat localnet-stop
+fi

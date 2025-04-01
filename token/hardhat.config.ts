@@ -9,6 +9,7 @@ import { getHardhatConfig } from "@zetachain/toolkit/client";
 
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
+import "./tasks";
 
 dotenv.config();
 
