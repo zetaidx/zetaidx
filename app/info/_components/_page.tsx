@@ -13,6 +13,10 @@ const faqs = [
       "Index token prices are determined by the value of the underlying assets in the index. Each index token represents a proportional claim on the basket of assets held in the index's reserve. The price is calculated based on the Net Asset Value (NAV) of these underlying tokens, and can be influenced by market demand and liquidity.",
   },
   {
+    question: "Are my assets safe?",
+    answer: "Yes! Unlike most platforms that use centralized wrapped tokens, we use a fully decentralized approach where your assets always remain in your custody. The source code is fully open source and easy to audit. Your tokens are always backed 1:1 by the underlying assets, with no centralized intermediary controlling your funds."
+  },
+  {
     question: "What happens during rebalancing?",
     answer:
       "Rebalancing is the process of adjusting the composition of an index to maintain its target allocations. When an index rebalances, it may sell tokens that have become overweight and buy tokens that have become underweight. This ensures the index maintains its intended strategy and exposure. Rebalancing typically occurs on a regular schedule (monthly or quarterly) or when allocations deviate significantly from targets.",

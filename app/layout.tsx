@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Zetaidx - Cross-Chain Crypto Index Platform",
   description:
-    "Diversified exposure across crypto markets with index tokens backed by real assets",
+    "Diversified exposure across crypto markets with index tokens backed by decentralized assets",
 };
 
 export default function RootLayout({

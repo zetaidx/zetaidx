@@ -37,7 +37,7 @@ export default function IndexesPage() {
           Explore Index Tokens
         </h1>
         <p className="text-muted-foreground">
-          Diversified exposure across crypto markets — backed by real assets
+          Diversified exposure across crypto markets — backed by decentralized assets
         </p>
       </div>
 
