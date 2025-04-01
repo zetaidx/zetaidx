@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { AlertTriangle, ArrowDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AlertTriangle, ArrowDown, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,7 +14,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { TokenSelector } from "./token-selector";
-import { mockTokens } from "@/lib/mock-data";
+import { mockTokens, mockIndexes } from "@/lib/mock-data";
 import type { IndexToken, Token } from "@/lib/types";
 
 interface SwapPanelProps {
@@ -22,8 +22,9 @@ interface SwapPanelProps {
 }
 
 export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
-  const [fromToken, setFromToken] = useState<Token>(mockTokens[0]);
-  const [toToken, setToToken] = useState<IndexToken | null>(selectedIndex);
+  const [isStablecoinToIndex, setIsStablecoinToIndex] = useState<boolean>(true);
+  const [fromToken, setFromToken] = useState<Token | IndexToken | null>(null);
+  const [toToken, setToToken] = useState<Token | IndexToken | null>(null);
   const [fromAmount, setFromAmount] = useState<string>("");
   const [toAmount, setToAmount] = useState<string>("");
   const [slippage, setSlippage] = useState<number>(0.5);
@@ -31,14 +32,29 @@ export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Filter tokens based on trade direction
+  const stablecoins = mockTokens.filter((t) => t.type === "stablecoin");
+  const indexTokens = mockIndexes;
+
+  // Set initial tokens based on direction
+  useEffect(() => {
+    if (isStablecoinToIndex) {
+      setFromToken(stablecoins[0]);
+      setToToken(selectedIndex || indexTokens[0]);
+    } else {
+      setFromToken(selectedIndex || indexTokens[0]);
+      setToToken(stablecoins[0]);
+    }
+  }, [isStablecoinToIndex, selectedIndex]);
+
   // Calculate to amount based on from amount (simplified)
   const calculateToAmount = (amount: string) => {
-    if (!amount || !toToken) return "";
+    if (!amount || !fromToken || !toToken) return "";
     const numAmount = Number.parseFloat(amount);
     if (isNaN(numAmount)) return "";
 
     // Simplified price calculation
-    const exchangeRate = 0.05; // 1 USDC = 0.05 Index tokens
+    const exchangeRate = isStablecoinToIndex ? 0.05 : 20; // 1 USDC = 0.05 Index tokens or vice versa
     return (numAmount * exchangeRate).toFixed(6);
   };
 
@@ -46,6 +62,19 @@ export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
   const handleFromAmountChange = (value: string) => {
     setFromAmount(value);
     setToAmount(calculateToAmount(value));
+  };
+
+  // Handle swap direction toggle
+  const handleDirectionToggle = () => {
+    setIsStablecoinToIndex(!isStablecoinToIndex);
+    // Swap tokens
+    const tempFrom = fromToken;
+    setFromToken(toToken);
+    setToToken(tempFrom);
+    // Swap amounts
+    const tempFromAmount = fromAmount;
+    setFromAmount(toAmount);
+    setToAmount(tempFromAmount);
   };
 
   // Handle swap
@@ -70,7 +99,7 @@ export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
   };
 
   // Check if liquidity is low (for demo purposes)
-  const isLiquidityLow = toToken?.tvl && toToken.tvl < 500000;
+  const isLiquidityLow = toToken && "tvl" in toToken && toToken.tvl < 500000;
 
   // Calculate price impact (for demo purposes)
   const priceImpact = fromAmount
@@ -91,6 +120,26 @@ export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Trade Direction Toggle */}
+        <div className="flex items-center justify-between p-2 rounded-md border">
+          <span className="text-sm font-medium">Trade Direction</span>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">
+              {isStablecoinToIndex
+                ? "Stablecoin → Index"
+                : "Index → Stablecoin"}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDirectionToggle}
+              className="h-8 w-8"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
         {/* From Token */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
@@ -99,7 +148,7 @@ export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
           </div>
           <div className="flex items-center space-x-2 p-4 rounded-md border">
             <TokenSelector
-              tokens={mockTokens}
+              tokens={isStablecoinToIndex ? stablecoins : indexTokens}
               selectedToken={fromToken}
               onSelectToken={setFromToken}
               type="from"
@@ -139,11 +188,10 @@ export default function SwapPanel({ selectedIndex }: SwapPanelProps) {
           </div>
           <div className="flex items-center space-x-2 p-4 rounded-md border">
             <TokenSelector
-              tokens={mockTokens.filter((t) => t.id !== fromToken?.id)}
+              tokens={isStablecoinToIndex ? indexTokens : stablecoins}
               selectedToken={toToken}
               onSelectToken={setToToken}
               type="to"
-              indexTokens={selectedIndex ? [selectedIndex] : undefined}
             />
             <input
               type="text"

@@ -1,25 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Check, ChevronDown } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { cn } from "@/lib/utils"
-import type { IndexToken, Token } from "@/lib/types"
+import { useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import type { IndexToken, Token } from "@/lib/types";
 
 interface TokenSelectorProps {
-  tokens: Token[]
-  selectedToken: Token | IndexToken | null
-  onSelectToken: (token: any) => void
-  type: "from" | "to"
-  indexTokens?: IndexToken[]
+  tokens: (Token | IndexToken)[];
+  selectedToken: Token | IndexToken | null;
+  onSelectToken: (token: Token | IndexToken) => void;
+  type: "from" | "to";
 }
 
-export function TokenSelector({ tokens, selectedToken, onSelectToken, type, indexTokens }: TokenSelectorProps) {
-  const [open, setOpen] = useState(false)
-
-  // Combine regular tokens and index tokens for the "to" selector
-  const allTokens = type === "to" && indexTokens ? [...tokens, ...indexTokens] : tokens
+export function TokenSelector({
+  tokens,
+  selectedToken,
+  onSelectToken,
+  type,
+}: TokenSelectorProps) {
+  const [open, setOpen] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -30,7 +42,14 @@ export function TokenSelector({ tokens, selectedToken, onSelectToken, type, inde
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary flex items-center justify-center text-primary text-xs font-bold">
                 {selectedToken.symbol.substring(0, 2)}
               </div>
-              <span>{selectedToken.symbol}</span>
+              <div className="flex flex-col items-start">
+                <span>{selectedToken.symbol}</span>
+                {"description" in selectedToken && (
+                  <span className="text-xs text-muted-foreground">
+                    {selectedToken.description}
+                  </span>
+                )}
+              </div>
             </>
           ) : (
             <span>Select token</span>
@@ -38,29 +57,46 @@ export function TokenSelector({ tokens, selectedToken, onSelectToken, type, inde
           <ChevronDown className="h-4 w-4 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-[300px] p-0" align="start">
         <Command>
           <CommandInput placeholder="Search token..." />
           <CommandList>
             <CommandEmpty>No tokens found.</CommandEmpty>
             <CommandGroup>
-              {allTokens.map((token) => (
+              {tokens.map((token) => (
                 <CommandItem
                   key={token.id}
                   value={token.symbol}
                   onSelect={() => {
-                    onSelectToken(token)
-                    setOpen(false)
+                    onSelectToken(token);
+                    setOpen(false);
                   }}
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary flex items-center justify-center text-primary text-xs font-bold">
                       {token.symbol.substring(0, 2)}
                     </div>
-                    <span>{token.symbol}</span>
+                    <div className="flex flex-col items-start">
+                      <span>{token.symbol}</span>
+                      {"description" in token && (
+                        <span className="text-xs text-muted-foreground">
+                          {token.description}
+                        </span>
+                      )}
+                      {"tvl" in token && (
+                        <span className="text-xs text-muted-foreground">
+                          TVL: ${(token.tvl / 1000000).toFixed(1)}M
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <Check
-                    className={cn("ml-auto h-4 w-4", selectedToken?.id === token.id ? "opacity-100" : "opacity-0")}
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      selectedToken?.id === token.id
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
                   />
                 </CommandItem>
               ))}
@@ -69,6 +105,5 @@ export function TokenSelector({ tokens, selectedToken, onSelectToken, type, inde
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
-

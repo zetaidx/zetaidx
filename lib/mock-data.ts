@@ -1,4 +1,4 @@
-import type { IndexToken, Token } from "./types"
+import type { IndexToken, Token } from "./types";
 
 export const mockTokens: Token[] = [
   {
@@ -6,56 +6,79 @@ export const mockTokens: Token[] = [
     name: "USD Coin",
     symbol: "USDC",
     price: 1.0,
+    type: "stablecoin",
+  },
+  {
+    id: "usdt",
+    name: "Tether",
+    symbol: "USDT",
+    price: 1.0,
+    type: "stablecoin",
+  },
+  {
+    id: "dai",
+    name: "Dai",
+    symbol: "DAI",
+    price: 1.0,
+    type: "stablecoin",
   },
   {
     id: "eth",
     name: "Ethereum",
     symbol: "ETH",
     price: 2000.0,
+    type: "token",
   },
   {
     id: "doge",
     name: "Dogecoin",
     symbol: "DOGE",
     price: 0.1,
+    type: "token",
   },
   {
     id: "shib",
     name: "Shiba Inu",
     symbol: "SHIB",
     price: 0.00001,
+    type: "token",
   },
   {
     id: "aave",
     name: "Aave",
     symbol: "AAVE",
     price: 80.0,
+    type: "token",
   },
   {
     id: "uni",
     name: "Uniswap",
     symbol: "UNI",
     price: 5.0,
+    type: "token",
   },
   {
     id: "comp",
     name: "Compound",
     symbol: "COMP",
     price: 40.0,
+    type: "token",
   },
   {
     id: "link",
     name: "Chainlink",
     symbol: "LINK",
     price: 10.0,
+    type: "token",
   },
-]
+];
 
 export const mockIndexes: IndexToken[] = [
   {
     id: "zidx-meme",
     name: "Meme Basket",
     symbol: "ZIDX-MEME",
+    type: "token",
     description: "Top-performing meme tokens bundled in one index",
     theme: "Meme",
     tvl: 1250000,
@@ -71,6 +94,7 @@ export const mockIndexes: IndexToken[] = [
     id: "zidx-defi",
     name: "DeFi Index",
     symbol: "ZIDX-DEFI",
+    type: "token",
     description: "Exposure to decentralized finance protocols",
     theme: "DeFi",
     tvl: 3500000,
@@ -87,6 +111,7 @@ export const mockIndexes: IndexToken[] = [
     id: "zidx-blue",
     name: "Blue Chip",
     symbol: "ZIDX-BLUE",
+    type: "token",
     description: "Major cryptocurrencies with established market presence",
     theme: "Blue-Chip",
     tvl: 8750000,
@@ -102,6 +127,7 @@ export const mockIndexes: IndexToken[] = [
     id: "zidx-equal",
     name: "Equal Weight",
     symbol: "ZIDX-EQUAL",
+    type: "token",
     description: "Equal allocation across major crypto assets",
     theme: "Blue-Chip",
     tvl: 4250000,
@@ -115,5 +141,4 @@ export const mockIndexes: IndexToken[] = [
       { token: "UNI", percentage: 25 },
     ],
   },
-]
-
+];
