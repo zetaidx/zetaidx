@@ -63,7 +63,7 @@ contract ZetaIdxUniversalToken is UniversalToken {
             uint256 tokenAmount = (amount * tokenInfo.ratio) / TOTAL_RATIO;
             IERC20(tokenInfo.token).transferFrom(msg.sender, address(this), tokenAmount);
         }
-        
+
         // Mint index tokens to user
         _mint(msg.sender, amount);
         emit Wrapped(msg.sender, amount);
