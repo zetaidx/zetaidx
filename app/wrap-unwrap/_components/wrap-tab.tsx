@@ -1,24 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Plus, Trash2, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { mockIndexes, mockTokens } from "@/lib/mock-data"
-import type { IndexToken, Token } from "@/lib/types"
+import { useState, useEffect } from "react";
+import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { mockIndexes, mockTokens } from "@/lib/mock-data";
+import type { IndexToken, Token } from "@/lib/types";
 
 interface TokenInputRowProps {
-  token: Token
-  amount: string
-  percentage: number
-  onAmountChange: (amount: string) => void
-  onRemove: () => void
-  isRemovable: boolean
+  token: Token;
+  amount: string;
+  percentage: number;
+  onAmountChange: (amount: string) => void;
+  onRemove: () => void;
+  isRemovable: boolean;
 }
 
-function TokenInputRow({ token, amount, percentage, onAmountChange, onRemove, isRemovable }: TokenInputRowProps) {
+function TokenInputRow({
+  token,
+  amount,
+  percentage,
+  onAmountChange,
+  onRemove,
+  isRemovable,
+}: TokenInputRowProps) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex-1 flex items-center gap-2 p-3 rounded-md border">
@@ -27,7 +47,9 @@ function TokenInputRow({ token, amount, percentage, onAmountChange, onRemove, is
         </div>
         <div className="flex-1">
           <div className="font-medium">{token.symbol}</div>
-          <div className="text-xs text-muted-foreground">Proportion: {percentage}%</div>
+          <div className="text-xs text-muted-foreground">
+            Proportion: {percentage}%
+          </div>
         </div>
         <input
           type="text"
@@ -43,89 +65,84 @@ function TokenInputRow({ token, amount, percentage, onAmountChange, onRemove, is
         </Button>
       )}
     </div>
-  )
+  );
 }
 
 export function WrapTab() {
-  const [selectedIndex, setSelectedIndex] = useState<IndexToken>(mockIndexes[0])
-  const [tokenInputs, setTokenInputs] = useState<{ token: Token; amount: string }[]>([
-    { token: mockTokens[0], amount: "" },
-    { token: mockTokens[1], amount: "" },
-  ])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState<IndexToken>(
+    mockIndexes[0]
+  );
+  const [desiredAmount, setDesiredAmount] = useState<string>("");
+  const [tokenInputs, setTokenInputs] = useState<
+    { token: Token; amount: string }[]
+  >([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Calculate the expected output based on inputs
-  const calculateOutput = () => {
-    const totalValue = tokenInputs.reduce((sum, input) => {
-      const amount = Number.parseFloat(input.amount) || 0
-      return sum + amount
-    }, 0)
+  // Initialize token inputs when index changes
+  useEffect(() => {
+    const inputs = selectedIndex.composition.map((comp) => ({
+      token: mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0],
+      amount: "",
+    }));
+    setTokenInputs(inputs);
+  }, [selectedIndex]);
 
-    // Simplified calculation - in reality would depend on index composition and prices
-    return totalValue > 0 ? (totalValue * 0.05).toFixed(6) : "0"
-  }
-
-  // Add a new token input row
-  const addTokenInput = () => {
-    const availableTokens = mockTokens.filter((token) => !tokenInputs.some((input) => input.token.id === token.id))
-
-    if (availableTokens.length > 0) {
-      setTokenInputs([...tokenInputs, { token: availableTokens[0], amount: "" }])
+  // Calculate required token amounts based on desired index token amount
+  const calculateRequiredAmounts = (amount: string) => {
+    const numAmount = Number.parseFloat(amount) || 0;
+    if (numAmount <= 0) {
+      setTokenInputs(tokenInputs.map((input) => ({ ...input, amount: "" })));
+      return;
     }
-  }
 
-  // Remove a token input row
-  const removeTokenInput = (index: number) => {
-    if (tokenInputs.length > 1) {
-      const newInputs = [...tokenInputs]
-      newInputs.splice(index, 1)
-      setTokenInputs(newInputs)
-    }
-  }
+    // Simplified calculation - in reality would use actual token prices and ratios
+    const baseValue = numAmount * 20; // Assuming 1 index token = $20 worth of assets
+    const newInputs = tokenInputs.map((input, index) => {
+      const percentage = selectedIndex.composition[index].percentage;
+      const requiredValue = (baseValue * percentage) / 100;
+      const tokenAmount = input.token.price
+        ? (requiredValue / input.token.price).toFixed(6)
+        : "0";
+      return { ...input, amount: tokenAmount };
+    });
+    setTokenInputs(newInputs);
+  };
 
-  // Update amount for a token input
-  const updateAmount = (index: number, amount: string) => {
-    const newInputs = [...tokenInputs]
-    newInputs[index].amount = amount
-    setTokenInputs(newInputs)
-  }
+  // Handle desired amount change
+  const handleDesiredAmountChange = (amount: string) => {
+    setDesiredAmount(amount);
+    calculateRequiredAmounts(amount);
+  };
 
   // Handle wrap action
   const handleWrap = () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     // Simulate API call
     setTimeout(() => {
-      setIsSubmitting(false)
-      setIsSuccess(true)
+      setIsSubmitting(false);
+      setIsSuccess(true);
 
       // Reset after success
       setTimeout(() => {
-        setIsSuccess(false)
-        setTokenInputs(tokenInputs.map((input) => ({ ...input, amount: "" })))
-      }, 3000)
-    }, 2000)
-  }
+        setIsSuccess(false);
+        setDesiredAmount("");
+        setTokenInputs(tokenInputs.map((input) => ({ ...input, amount: "" })));
+      }, 3000);
+    }, 2000);
+  };
 
   // Check if form is valid
-  const isFormValid = tokenInputs.some((input) => Number.parseFloat(input.amount) > 0)
-
-  // Calculate percentages for token composition
-  const totalTokens = tokenInputs.length
-  const percentagePerToken = Math.floor(100 / totalTokens)
-  const remainingPercentage = 100 - percentagePerToken * totalTokens
-
-  const getPercentage = (index: number) => {
-    return index === 0 ? percentagePerToken + remainingPercentage : percentagePerToken
-  }
+  const isFormValid = Number.parseFloat(desiredAmount) > 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Wrap Tokens</CardTitle>
         <CardDescription>
-          Create new index tokens by depositing the underlying assets in the correct proportions
+          Create new index tokens by depositing the underlying assets in the
+          correct proportions
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -135,8 +152,8 @@ export function WrapTab() {
           <Select
             value={selectedIndex.id}
             onValueChange={(value) => {
-              const index = mockIndexes.find((i) => i.id === value)
-              if (index) setSelectedIndex(index)
+              const index = mockIndexes.find((i) => i.id === value);
+              if (index) setSelectedIndex(index);
             }}
           >
             <SelectTrigger>
@@ -154,19 +171,35 @@ export function WrapTab() {
 
         <Separator />
 
-        {/* Token Inputs */}
+        {/* Desired Output Amount */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Desired Index Token Amount
+          </label>
+          <div className="flex items-center gap-2 p-3 rounded-md border">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary flex items-center justify-center text-primary text-xs font-bold">
+              {selectedIndex.symbol.substring(5, 7)}
+            </div>
+            <div className="flex-1">
+              <div className="font-medium">{selectedIndex.symbol}</div>
+              <div className="text-xs text-muted-foreground">
+                {selectedIndex.name}
+              </div>
+            </div>
+            <input
+              type="text"
+              value={desiredAmount}
+              onChange={(e) => handleDesiredAmountChange(e.target.value)}
+              placeholder="0.0"
+              className="w-24 bg-transparent text-right focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Required Token Inputs */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-sm font-medium">Input Tokens</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addTokenInput}
-              disabled={tokenInputs.length >= mockTokens.length}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Token
-            </Button>
+            <h3 className="text-sm font-medium">Required Token Amounts</h3>
           </div>
 
           <div className="space-y-3">
@@ -175,37 +208,22 @@ export function WrapTab() {
                 key={index}
                 token={input.token}
                 amount={input.amount}
-                percentage={getPercentage(index)}
-                onAmountChange={(amount) => updateAmount(index, amount)}
-                onRemove={() => removeTokenInput(index)}
-                isRemovable={tokenInputs.length > 1}
+                percentage={selectedIndex.composition[index].percentage}
+                onAmountChange={() => {}}
+                onRemove={() => {}}
+                isRemovable={false}
               />
             ))}
           </div>
         </div>
-
-        {/* Output Estimate */}
-        <div className="p-4 bg-muted/30 rounded-lg">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">You will receive</span>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary flex items-center justify-center text-primary text-xs font-bold">
-                {selectedIndex.symbol.substring(5, 7)}
-              </div>
-              <div>
-                <div className="font-medium">{selectedIndex.symbol}</div>
-                <div className="text-xs text-muted-foreground">{selectedIndex.name}</div>
-              </div>
-            </div>
-            <div className="text-xl font-bold">{calculateOutput()}</div>
-          </div>
-        </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full" size="lg" disabled={!isFormValid || isSubmitting || isSuccess} onClick={handleWrap}>
+        <Button
+          className="w-full"
+          size="lg"
+          disabled={!isFormValid || isSubmitting || isSuccess}
+          onClick={handleWrap}
+        >
           {isSubmitting ? (
             <span className="flex items-center">
               <svg
@@ -214,7 +232,14 @@ export function WrapTab() {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -232,7 +257,12 @@ export function WrapTab() {
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
               </svg>
               Wrap Successful!
             </span>
@@ -242,6 +272,5 @@ export function WrapTab() {
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }
-

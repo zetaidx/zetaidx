@@ -1,7 +1,7 @@
 const { task } = require("hardhat/config");
 
-task("deployTestTokens", "Deploys 3 test ERC20 tokens")
-  .setAction(async (_: any, hre: any) => {
+task("deployTestTokens", "Deploys 3 test ERC20 tokens").setAction(
+  async (_: any, hre: any) => {
     const [deployer] = await hre.ethers.getSigners();
     console.log("Deploying test tokens from:", deployer.address);
 
@@ -15,11 +15,16 @@ task("deployTestTokens", "Deploys 3 test ERC20 tokens")
 
     const addresses = [];
     for (const token of tokens) {
-      const instance = await TestToken.deploy(token.name, token.symbol, hre.ethers.utils.parseEther("1000000"));
+      const instance = await TestToken.deploy(
+        token.name,
+        token.symbol,
+        hre.ethers.utils.parseEther("1000000")
+      );
       await instance.deployed();
       console.log(`✅ ${token.symbol} deployed at:`, instance.address);
       addresses.push(instance.address);
     }
 
     console.log(addresses.join(","));
-  });
+  }
+);
