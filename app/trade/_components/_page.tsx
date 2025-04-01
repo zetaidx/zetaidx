@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import SwapPanel from "./swap-panel";
 import { PriceChart } from "./price-chart";
 import { mockIndexes } from "@/lib/mock-data";
 import type { IndexToken } from "@/lib/types";
 
-export default function TradePage() {
+function TradeContent() {
   const searchParams = useSearchParams();
   const indexId = searchParams.get("index");
 
@@ -31,5 +31,13 @@ export default function TradePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TradePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TradeContent />
+    </Suspense>
   );
 }
