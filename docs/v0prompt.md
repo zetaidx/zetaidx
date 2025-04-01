@@ -21,7 +21,7 @@ The sticky header uses a responsive layout so that on smaller screens the nav li
 
 The **Indexes** page is the main landing for exploring Zetaidx’s index token offerings. It gives users an overview of all available index tokens, each representing a diversified basket of crypto assets (each index token is backed by a reserve of underlying assets . Key sections of this page include:
 
-- **Page Title & Subtitle:** At the top, a prominent title “Explore Index Tokens” with a subtitle like “Diversified exposure across crypto markets — backed by real assets.” This explains the purpose of index tokens (one token gives exposure to many assets, as the underlying reserves back its value and sets context for the user.
+- **Page Title & Subtitle:** At the top, a prominent title “Explore Index Tokens” with a subtitle like “Diversified exposure across crypto markets — backed by decentralized assets.” This explains the purpose of index tokens (one token gives exposure to many assets, as the underlying reserves back its value and sets context for the user.
 
 - **Filters & Sorting Toolbar:** A control bar that lets users refine and order the list of indexes. Users can filter by _Theme_ (e.g. Meme tokens, DeFi, Blue-Chip) and sort by metrics like Total Volume, TVL (total value locked), or recent performance. There is also a toggle to switch between a **grid view** and a **list view**, accommodating user preference for how information is displayed. These tools help users quickly find indices that fit their interest (for example, filtering to see only DeFi index products).
 
@@ -220,7 +220,7 @@ The sticky header uses a responsive layout so that on smaller screens the nav li
 
 The **Indexes** page is the main landing for exploring Zetaidx’s index token offerings. It gives users an overview of all available index tokens, each representing a diversified basket of crypto assets (each index token is backed by a reserve of underlying assets . Key sections of this page include:
 
-- **Page Title & Subtitle:** At the top, a prominent title “Explore Index Tokens” with a subtitle like “Diversified exposure across crypto markets — backed by real assets.” This explains the purpose of index tokens (one token gives exposure to many assets, as the underlying reserves back its value and sets context for the user.
+- **Page Title & Subtitle:** At the top, a prominent title “Explore Index Tokens” with a subtitle like “Diversified exposure across crypto markets — backed by decentralized assets.” This explains the purpose of index tokens (one token gives exposure to many assets, as the underlying reserves back its value and sets context for the user.
 
 - **Filters & Sorting Toolbar:** A control bar that lets users refine and order the list of indexes. Users can filter by _Theme_ (e.g. Meme tokens, DeFi, Blue-Chip) and sort by metrics like Total Volume, TVL (total value locked), or recent performance. There is also a toggle to switch between a **grid view** and a **list view**, accommodating user preference for how information is displayed. These tools help users quickly find indices that fit their interest (for example, filtering to see only DeFi index products).
 
