@@ -1,3 +1,22 @@
-# Universal Token
+# zetaidx - token implementation
 
-Learn more: https://www.zetachain.com/docs/developers/standards/token
+## localnet usage
+
+```
+pnpm install
+```
+
+```
+./scripts/localnet.sh
+```
+
+## hardhat tests
+
+
+```
+pnpm install
+```
+
+```
+pnpm run test
+```
