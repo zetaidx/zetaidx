@@ -4,7 +4,7 @@
   "description": "Universal Token enables ERC-20 tokens to minted and transferred between connected chains",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "hardhat test",
     "lint:fix": "npx eslint . --ext .js,.ts --fix",
     "lint": "npx eslint . --ext .js,.ts",
     "deploy:localnet": "npx hardhat compile --force && npx hardhat deploy --network localhost --gateway 0x9A676e781A523b5d0C0e43731313A708CB607508 && npx hardhat deploy --name Echo --network localhost --gateway 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
@@ -50,17 +50,21 @@
     "typechain": "^8.1.0",
     "typescript": ">=4.5.0"
   },
-  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72",
   "dependencies": {
     "@coral-xyz/anchor": "0.30.0",
     "@openzeppelin/contracts": "^5.2.0",
+    "@openzeppelin/contracts-upgradeable": "^5.2.0",
     "@openzeppelin/hardhat-upgrades": "1.28.0",
     "@solana-developers/helpers": "^2.4.0",
     "@solana/spl-memo": "^0.2.5",
+    "@solana/wallet-adapter-react": "0.15.36",
     "@solana/web3.js": "^1.95.8",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "1.1.0-beta.0",
     "@zetachain/protocol-contracts": "11.0.0-rc3",
     "@zetachain/standard-contracts": "2.0.0-rc2",
     "@zetachain/toolkit": "13.0.0-rc17",
+    "bs58": "^6.0.0",
     "validator": "^13.12.0"
   }
 }
