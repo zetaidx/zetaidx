@@ -13,7 +13,7 @@ cleanup() {
 # Set up trap for cleanup on any exit
 trap cleanup EXIT
 
-npx hardhat localnet --exit-on-error --skip solana,sui & sleep 25
+npx hardhat localnet --exit-on-error --skip solana,sui & sleep 10
 echo -e "\n🚀 Compiling contracts..."
 npx hardhat compile --force --quiet
 

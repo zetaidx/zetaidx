@@ -28,6 +28,14 @@ const config: HardhatUserConfig = {
       },
     ],
   },
+  networks: {
+    hardhat: {
+      chainId: 1337,
+      accounts: {
+        mnemonic: "test test test test test test test test test test test junk",
+      },
+    },
+  },
 };
 
 export default config;
