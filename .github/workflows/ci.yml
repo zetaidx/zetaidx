@@ -15,3 +15,13 @@ jobs:
         working-directory: token
       - run: npx hardhat test
         working-directory: token
+  localnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+      - run: yarn
+        working-directory: token
+      - run: ./scripts/localnet.sh stop-after-setup
+        working-directory: token
