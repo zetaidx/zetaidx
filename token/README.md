@@ -1,6 +1,6 @@
 # zetaidx - token implementation
 
-### localnet usage
+## localnet usage
 
 ```
 pnpm install
@@ -10,7 +10,7 @@ pnpm install
 ./scripts/localnet.sh
 ```
 
-### hardhat tests
+## hardhat tests
 
 
 ```
