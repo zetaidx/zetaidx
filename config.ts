@@ -1,5 +1,5 @@
 import { AlchemyAccountsUIConfig, createConfig } from "@account-kit/react";
-import { sepolia, alchemy } from "@account-kit/infra";
+import { alchemy } from "@account-kit/infra";
 import { QueryClient } from "@tanstack/react-query";
 
 const uiConfig: AlchemyAccountsUIConfig = {
@@ -14,7 +14,10 @@ const uiConfig: AlchemyAccountsUIConfig = {
       [
         {
           type: "external_wallets",
-          walletConnect: { projectId: "your-project-id" },
+          walletConnect: {
+            projectId: process.env
+              .NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
+          },
         },
       ],
     ],
@@ -29,7 +32,20 @@ export const config = createConfig(
     transport: alchemy({
       apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY as string,
     }),
-    chain: sepolia,
+    chain: {
+      id: 7001,
+      name: "ZetaChain Athens",
+      nativeCurrency: {
+        name: "Zeta",
+        symbol: "ZETA",
+        decimals: 18,
+      },
+      rpcUrls: {
+        default: {
+          http: [process.env.NEXT_PUBLIC_ZETA_RPC_URL as string],
+        },
+      },
+    },
     ssr: true, // set to false if you're not using server-side rendering
     enablePopupOauth: true,
   },
