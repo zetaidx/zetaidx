@@ -20,7 +20,7 @@ task("wrap", "Wrap tokens to create index tokens")
 
     // Approve each token with correct amount
     for (let i = 0; i < tokens.length; i++) {
-      const token = await hre.ethers.getContractAt("TestToken", tokens[i]);
+      const token = await hre.ethers.getContractAt("IERC20", tokens[i]);
       const tokenAmount = wrapAmount.mul(ratios[i]).div(100);
       
       console.log(`Approving ${tokenAmount.toString()} tokens for ${tokens[i]}`);
@@ -29,7 +29,7 @@ task("wrap", "Wrap tokens to create index tokens")
 
     // Wrap tokens
     console.log(`Wrapping ${wrapAmount.toString()} tokens...`);
-    const wrapTx = await indexToken.wrap(wrapAmount);
+    const wrapTx = await indexToken.wrap(wrapAmount, { gasLimit: 500000});
     await wrapTx.wait();
     console.log("Wrap successful!");
   }); 
