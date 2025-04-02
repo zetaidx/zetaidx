@@ -29,8 +29,20 @@ export const config = createConfig(
     transport: alchemy({
       apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY as string,
     }),
-    chain: sepolia,
-    ssr: true, // set to false if you're not using server-side rendering
+    chain: {
+      id: 7001,
+      name: "ZetaChain Testnet",
+      nativeCurrency: {
+        decimals: 18,
+        name: "Zeta",
+        symbol: "ZETA",
+      },
+      rpcUrls: {
+        default: {
+          http: [process.env.NEXT_PUBLIC_ZETA_RPC_URL as string],
+        },
+      },
+    },
     enablePopupOauth: true,
   },
   uiConfig
