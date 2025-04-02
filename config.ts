@@ -44,6 +44,9 @@ export const config = createConfig(
         default: {
           http: [process.env.NEXT_PUBLIC_ZETA_RPC_URL as string],
         },
+        alchemy: {
+          http: [process.env.NEXT_PUBLIC_ZETA_RPC_URL as string],
+        },
       },
     },
     ssr: true, // set to false if you're not using server-side rendering
