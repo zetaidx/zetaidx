@@ -102,8 +102,8 @@ export const useAggregatePrice = (params: PriceQueryParams) => {
   return useQuery({
     queryKey: ['aggregatePrice', params],
     queryFn: () => fetchAggregatePrice(params),
-    staleTime: 1000 * 60, // 1 minute
-    refetchInterval: 1000 * 60, // Refetch every minute
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
   });
 };
 
@@ -111,7 +111,7 @@ export const useAggregatePnL = (params: PriceQueryParams) => {
   return useQuery({
     queryKey: ['aggregatePnL', params],
     queryFn: () => fetchAggregatePnL(params),
-    staleTime: 1000 * 60, // 1 minute
-    refetchInterval: 1000 * 60, // Refetch every minute
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
   });
 };
