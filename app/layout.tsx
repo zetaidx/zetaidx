@@ -2,9 +2,8 @@ import type React from "react";
 import type { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "./_components/theme-provider";
 import Header from "./_components/Header";
-import { AlchemyProviders } from "./_components/alchemy-provider";
+import { Providers } from "./_components/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,19 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <AlchemyProviders>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
-          </ThemeProvider>
-        </AlchemyProviders>
+        <Providers>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+          </div>
+        </Providers>
       </body>
     </html>
   );

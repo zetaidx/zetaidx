@@ -4,37 +4,82 @@ import { useState } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { IndexToken } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
+import { useAggregatePrice } from "@/lib/prices"
 
 interface PriceChartProps {
   selectedIndex: IndexToken | null
 }
 
-// Mock price data
-const generatePriceData = (days: number, volatility: number, trend: number) => {
-  const data = []
-  let price = 100 + Math.random() * 20
-
-  for (let i = 0; i < days; i++) {
-    price = price * (1 + (Math.random() - 0.5) * volatility + trend)
-    data.push({
-      date: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
-      price: price,
-    })
-  }
-
-  return data
-}
-
-const priceData24h = generatePriceData(24, 0.02, 0.001)
-const priceData7d = generatePriceData(7, 0.05, 0.002)
-const priceData30d = generatePriceData(30, 0.08, 0.005)
-
 export function PriceChart({ selectedIndex }: PriceChartProps) {
   const [timeframe, setTimeframe] = useState<"24h" | "7d" | "30d">("7d")
 
-  const data = timeframe === "24h" ? priceData24h : timeframe === "7d" ? priceData7d : priceData30d
+  const { data: priceData, isLoading } = useAggregatePrice({
+    symbols: selectedIndex ? selectedIndex.composition.map(c => c.token) : [],
+    ratios: selectedIndex ? selectedIndex.composition.map(c => c.percentage / 100) : [],
+    interval: timeframe
+  })
+
+  if (!selectedIndex) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Price Chart</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-muted-foreground">Select an index to view price data</div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle>{selectedIndex.name}</CardTitle>
+            <Tabs defaultValue="7d" value={timeframe} onValueChange={(value) => setTimeframe(value as any)}>
+              <TabsList>
+                <TabsTrigger value="24h">24h</TabsTrigger>
+                <TabsTrigger value="7d">7d</TabsTrigger>
+                <TabsTrigger value="30d">30d</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-24 mt-2" />
+          </div>
+          <div className="h-[300px]">
+            <Skeleton className="h-full w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!priceData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{selectedIndex.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-muted-foreground">No price data available</div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const data = priceData.data.map(point => ({
+    date: point.timestamp,
+    price: point.value
+  }))
 
   const priceChange = data[data.length - 1].price - data[0].price
   const priceChangePercent = (priceChange / data[0].price) * 100
@@ -44,7 +89,7 @@ export function PriceChart({ selectedIndex }: PriceChartProps) {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle>{selectedIndex ? selectedIndex.name : "Price Chart"}</CardTitle>
+          <CardTitle>{selectedIndex.name}</CardTitle>
           <Tabs defaultValue="7d" value={timeframe} onValueChange={(value) => setTimeframe(value as any)}>
             <TabsList>
               <TabsTrigger value="24h">24h</TabsTrigger>
@@ -72,9 +117,10 @@ export function PriceChart({ selectedIndex }: PriceChartProps) {
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => {
                   if (timeframe === "24h") {
-                    return new Date(value).getHours() + "h"
+                    const date = new Date(value)
+                    return `${date.getHours().toString().padStart(2, '0')}:00`
                   }
-                  return value
+                  return new Date(value).toLocaleDateString()
                 }}
               />
               <YAxis
@@ -84,7 +130,7 @@ export function PriceChart({ selectedIndex }: PriceChartProps) {
               />
               <Tooltip
                 formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
-                labelFormatter={(label) => `Date: ${label}`}
+                labelFormatter={(label) => `Date: ${new Date(label).toLocaleString()}`}
                 contentStyle={{ backgroundColor: "rgba(0, 0, 0, 0.8)", border: "none" }}
               />
               <Line
