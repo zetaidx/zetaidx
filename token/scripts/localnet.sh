@@ -48,6 +48,7 @@ pnpm exec hardhat initializeIndex \
   --contract $CONTRACT_ZETACHAIN \
   --tokens "$TOKEN_LIST" \
   --ratios 50,30,20 \
+  --price-symbols "mBTC,mETH,mDOGE" \
   --network localhost
 
 # Get addresses from localnet.json
