@@ -73,10 +73,10 @@ const parsePnLData = (data: RawAggregatePnLResponse): AggregatePnLResponse => {
 };
 
 const fetchAggregatePrice = async ({ symbols, ratios, interval }: PriceQueryParams): Promise<AggregatePriceResponse> => {
-  const symbolsParam = symbols.join(',');
-  const ratiosParam = ratios.join(',');
+  const symbolsParam = symbols.map(s => encodeURIComponent(s)).join(',');
+  const ratiosParam = ratios.map(r => encodeURIComponent(r)).join(',');
   const response = await fetch(
-    `${PRICE_API_BASE_URL}/aggregate?symbols=${symbolsParam}&ratios=${ratiosParam}&interval=${interval}`
+    `${PRICE_API_BASE_URL}/aggregate?symbols=${symbolsParam}&ratios=${ratiosParam}&interval=${encodeURIComponent(interval)}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch aggregate price');
@@ -86,10 +86,10 @@ const fetchAggregatePrice = async ({ symbols, ratios, interval }: PriceQueryPara
 };
 
 const fetchAggregatePnL = async ({ symbols, ratios, interval }: PriceQueryParams): Promise<AggregatePnLResponse> => {
-  const symbolsParam = symbols.join(',');
-  const ratiosParam = ratios.join(',');
+  const symbolsParam = symbols.map(s => encodeURIComponent(s)).join(',');
+  const ratiosParam = ratios.map(r => encodeURIComponent(r)).join(',');
   const response = await fetch(
-    `${PRICE_API_BASE_URL}/aggregate/pnl?symbols=${symbolsParam}&ratios=${ratiosParam}&interval=${interval}`
+    `${PRICE_API_BASE_URL}/aggregate/pnl?symbols=${symbolsParam}&ratios=${ratiosParam}&interval=${encodeURIComponent(interval)}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch aggregate PnL');
