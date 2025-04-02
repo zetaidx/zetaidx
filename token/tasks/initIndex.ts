@@ -9,7 +9,10 @@ task("initializeIndex", "Initializes the index basket")
     const tokens = taskArgs.tokens.split(",");
     const ratios = taskArgs.ratios.split(",").map((r: any) => BigInt(r));
 
-    const contract = await hre.ethers.getContractAt("ZetaIdxUniversalToken", contractAddr);
+    const contract = await hre.ethers.getContractAt(
+      "ZetaIdxUniversalToken",
+      contractAddr
+    );
 
     const tx = await contract.initializeIndex(tokens, ratios);
     console.log("initializeIndex tx:", tx.hash);
@@ -21,6 +24,8 @@ task("initializeIndex", "Initializes the index basket")
 
     for (let i = 0; i < length; i++) {
       const entry = await contract.basket(i);
-      console.log(`- Token ${i}: ${entry.token} (Ratio: ${entry.ratio.toString()})`);
+      console.log(
+        `- Token ${i}: ${entry.token} (Ratio: ${entry.ratio.toString()})`
+      );
     }
   });

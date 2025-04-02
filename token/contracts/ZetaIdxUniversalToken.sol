@@ -53,11 +53,14 @@ contract ZetaIdxUniversalToken is UniversalToken {
     }
 
     function wrap(uint256 amount) external whenInitialized {
-        // Transfer tokens from user to contract
-        for (uint i = 0; i < basket.length; i++) {
+        require(amount > 0, "Amount must be greater than 0");
+        require(basket.length > 0, "Index not initialized");
+        require(!paused(), "Token is paused");
+        
+        // Transfer tokens from user
+        for (uint256 i = 0; i < basket.length; i++) {
             TokenInfo memory tokenInfo = basket[i];
             uint256 tokenAmount = (amount * tokenInfo.ratio) / TOTAL_RATIO;
-            
             IERC20(tokenInfo.token).transferFrom(msg.sender, address(this), tokenAmount);
         }
 
