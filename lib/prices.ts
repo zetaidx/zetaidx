@@ -25,6 +25,7 @@ export interface AggregatePnLResponse {
 interface PriceQueryParams {
   symbols: string[];
   ratios: number[];
+  interval: "24h" | "7d" | "30d";
 }
 
 const parseDate = (dateString: string): Date => {
@@ -51,11 +52,11 @@ const parsePnLData = (data: any): AggregatePnLResponse => {
   };
 };
 
-const fetchAggregatePrice = async ({ symbols, ratios }: PriceQueryParams): Promise<AggregatePriceResponse> => {
+const fetchAggregatePrice = async ({ symbols, ratios, interval }: PriceQueryParams): Promise<AggregatePriceResponse> => {
   const symbolsParam = symbols.join(',');
   const ratiosParam = ratios.join(',');
   const response = await fetch(
-    `${PRICE_API_BASE_URL}/aggregate?symbols=${symbolsParam}&ratios=${ratiosParam}`
+    `${PRICE_API_BASE_URL}/aggregate?symbols=${symbolsParam}&ratios=${ratiosParam}&interval=${interval}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch aggregate price');
@@ -64,11 +65,11 @@ const fetchAggregatePrice = async ({ symbols, ratios }: PriceQueryParams): Promi
   return parsePriceData(data);
 };
 
-const fetchAggregatePnL = async ({ symbols, ratios }: PriceQueryParams): Promise<AggregatePnLResponse> => {
+const fetchAggregatePnL = async ({ symbols, ratios, interval }: PriceQueryParams): Promise<AggregatePnLResponse> => {
   const symbolsParam = symbols.join(',');
   const ratiosParam = ratios.join(',');
   const response = await fetch(
-    `${PRICE_API_BASE_URL}/aggregate/pnl?symbols=${symbolsParam}&ratios=${ratiosParam}`
+    `${PRICE_API_BASE_URL}/aggregate/pnl?symbols=${symbolsParam}&ratios=${ratiosParam}&interval=${interval}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch aggregate PnL');
