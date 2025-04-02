@@ -72,7 +72,31 @@ const parsePnLData = (data: RawAggregatePnLResponse): AggregatePnLResponse => {
   };
 };
 
+/**
+ * Validates price query parameters and throws descriptive errors if invalid
+ * @throws {Error} If parameters are invalid
+ */
+const validatePriceQueryParams = ({ symbols, ratios, interval }: PriceQueryParams): void => {
+  if (!Array.isArray(symbols) || symbols.length === 0) {
+    throw new Error('Symbols must be a non-empty array');
+  }
+
+  if (!Array.isArray(ratios) || ratios.length === 0) {
+    throw new Error('Ratios must be a non-empty array');
+  }
+
+  if (ratios.some(ratio => typeof ratio !== 'number' || isNaN(ratio))) {
+    throw new Error('All ratios must be valid numbers');
+  }
+
+  if (!['24h', '7d', '30d'].includes(interval)) {
+    throw new Error('Interval must be one of: "24h", "7d", "30d"');
+  }
+};
+
 const fetchAggregatePrice = async ({ symbols, ratios, interval }: PriceQueryParams): Promise<AggregatePriceResponse> => {
+  validatePriceQueryParams({ symbols, ratios, interval });
+
   const symbolsParam = symbols.map(s => encodeURIComponent(s)).join(',');
   const ratiosParam = ratios.map(r => encodeURIComponent(r)).join(',');
   const response = await fetch(
@@ -86,6 +110,8 @@ const fetchAggregatePrice = async ({ symbols, ratios, interval }: PriceQueryPara
 };
 
 const fetchAggregatePnL = async ({ symbols, ratios, interval }: PriceQueryParams): Promise<AggregatePnLResponse> => {
+  validatePriceQueryParams({ symbols, ratios, interval });
+
   const symbolsParam = symbols.map(s => encodeURIComponent(s)).join(',');
   const ratiosParam = ratios.map(r => encodeURIComponent(r)).join(',');
   const response = await fetch(
@@ -98,20 +124,34 @@ const fetchAggregatePnL = async ({ symbols, ratios, interval }: PriceQueryParams
   return parsePnLData(data);
 };
 
+/**
+ * React Query hook for fetching aggregate price data
+ * @param params Query parameters including symbols, ratios, and interval
+ * @returns Query result containing price data
+ * @throws {Error} If parameters are invalid (empty arrays, invalid numbers, etc.)
+ */
 export const useAggregatePrice = (params: PriceQueryParams) => {
   return useQuery({
     queryKey: ['aggregatePrice', params],
     queryFn: () => fetchAggregatePrice(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
+    enabled: params.symbols.length > 0 && params.ratios.length > 0, // Prevent query when arrays are empty
   });
 };
 
+/**
+ * React Query hook for fetching aggregate PnL data
+ * @param params Query parameters including symbols, ratios, and interval
+ * @returns Query result containing PnL data
+ * @throws {Error} If parameters are invalid (empty arrays, invalid numbers, etc.)
+ */
 export const useAggregatePnL = (params: PriceQueryParams) => {
   return useQuery({
     queryKey: ['aggregatePnL', params],
     queryFn: () => fetchAggregatePnL(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
+    enabled: params.symbols.length > 0 && params.ratios.length > 0, // Prevent query when arrays are empty
   });
 };
