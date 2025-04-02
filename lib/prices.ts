@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-const PRICE_API_BASE_URL = 'https://zetaidx-price-worker.zetachain.workers.dev';
+const PRICE_API_BASE_URL = 'https://idx-prices.zetachain.io';
 
 export interface PriceDataPoint {
   value: number;
