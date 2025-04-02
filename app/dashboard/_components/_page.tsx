@@ -13,23 +13,13 @@ import { WalletConnect } from "./wallet-connect";
 import { IndexHoldings } from "./index-holdings";
 import { TokenHoldings } from "./token-holdings";
 import { formatCurrency } from "@/lib/utils";
+import { useLogout, useUser } from "@account-kit/react";
 
 export default function DashboardPage() {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState("");
+  const user = useUser();
+  const { logout } = useLogout();
 
-  // Connect wallet handler
-  const handleConnectWallet = () => {
-    // Simulate wallet connection
-    setIsWalletConnected(true);
-    setWalletAddress("0x1234...5678");
-  };
-
-  // Disconnect wallet handler
-  const handleDisconnectWallet = () => {
-    setIsWalletConnected(false);
-    setWalletAddress("");
-  };
+  const walletAddress = user?.address;
 
   // Calculate total portfolio value
   const calculateTotalValue = () => {
@@ -46,8 +36,8 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {!isWalletConnected ? (
-        <WalletConnect onConnect={handleConnectWallet} />
+      {!user ? (
+        <WalletConnect />
       ) : (
         <div className="space-y-8">
           <Card>
@@ -68,11 +58,7 @@ export default function DashboardPage() {
                       {formatCurrency(calculateTotalValue())}
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDisconnectWallet}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => logout()}>
                     Disconnect
                   </Button>
                 </div>
