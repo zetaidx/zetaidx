@@ -14,7 +14,7 @@ describe("ZetaIdxUniversalToken", function () {
   let uniswapRouter: string;
 
   const TOKEN_NAMES = ["Test BTC", "Test ETH", "Test DOGE"];
-  const TOKEN_SYMBOLS = ["tBTC", "tETH", "tDOGE"];
+  const TOKEN_PRICE_SYMBOLS = ["tBTC", "tETH", "tDOGE"];
   const INITIAL_SUPPLY = ethers.utils.parseEther("1000000");
   const RATIOS = [50, 30, 20]; // 50% BTC, 30% ETH, 20% DOGE
   const GAS_LIMIT = 1000000;
@@ -28,7 +28,7 @@ describe("ZetaIdxUniversalToken", function () {
       const TestToken = await ethers.getContractFactory("TestToken");
       const token = await TestToken.deploy(
         TOKEN_NAMES[i],
-        TOKEN_SYMBOLS[i],
+        TOKEN_PRICE_SYMBOLS[i],
         INITIAL_SUPPLY
       );
       testTokens.push(token);
@@ -58,7 +58,8 @@ describe("ZetaIdxUniversalToken", function () {
     // Initialize index
     await indexToken.initializeIndex(
       testTokens.map((t) => t.address),
-      RATIOS
+      RATIOS,
+      TOKEN_PRICE_SYMBOLS
     );
 
     // Transfer some test tokens to user
@@ -70,9 +71,10 @@ describe("ZetaIdxUniversalToken", function () {
   describe("Initialization", function () {
     it("should initialize with correct tokens and ratios", async function () {
       for (let i = 0; i < testTokens.length; i++) {
-        const [token, ratio] = await indexToken.getTokenInfo(i);
+        const [token, ratio, symbol] = await indexToken.getTokenInfo(i);
         expect(token).to.equal(testTokens[i].address);
         expect(ratio).to.equal(RATIOS[i]);
+        expect(symbol).to.equal(TOKEN_PRICE_SYMBOLS[i]);
       }
     });
 
@@ -80,7 +82,8 @@ describe("ZetaIdxUniversalToken", function () {
       await expect(
         indexToken.initializeIndex(
           testTokens.map((t) => t.address),
-          RATIOS
+          RATIOS,
+          TOKEN_PRICE_SYMBOLS
         )
       ).to.be.revertedWithCustomError(indexToken, "AlreadyInitialized");
     });
@@ -109,7 +112,8 @@ describe("ZetaIdxUniversalToken", function () {
       await expect(
         newIndexToken.initializeIndex(
           testTokens.map((t) => t.address),
-          invalidRatios
+          invalidRatios,
+          TOKEN_PRICE_SYMBOLS
         )
       ).to.be.revertedWithCustomError(newIndexToken, "InvalidRatio");
     });
