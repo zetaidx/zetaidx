@@ -21,6 +21,11 @@ const config: HardhatUserConfig = {
       },
       chainId: 1337,
     },
+    testnet: {
+      url: "https://zetachain-athens.g.allthatnode.com/archive/evm",
+      accounts: [process.env.PRIVATE_KEY as any],
+      chainId: 7001
+    }
   },
   solidity: {
     compilers: [
