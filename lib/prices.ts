@@ -28,22 +28,42 @@ interface PriceQueryParams {
   interval: "24h" | "7d" | "30d";
 }
 
+interface RawPriceDataPoint {
+  value: number;
+  timestamp: string;
+}
+
+interface RawAggregatePriceResponse {
+  data: RawPriceDataPoint[];
+  interval: string;
+  timestamp: string;
+}
+
+interface RawAggregatePnLResponse {
+  pnl: number;
+  firstValue: number;
+  lastValue: number;
+  firstTimestamp: string;
+  lastTimestamp: string;
+  timestamp: string;
+}
+
 const parseDate = (dateString: string): Date => {
   return new Date(dateString);
 };
 
-const parsePriceData = (data: any): AggregatePriceResponse => {
+const parsePriceData = (data: RawAggregatePriceResponse): AggregatePriceResponse => {
   return {
     ...data,
     timestamp: parseDate(data.timestamp),
-    data: data.data.map((point: any) => ({
+    data: data.data.map((point) => ({
       ...point,
       timestamp: parseDate(point.timestamp),
     })),
   };
 };
 
-const parsePnLData = (data: any): AggregatePnLResponse => {
+const parsePnLData = (data: RawAggregatePnLResponse): AggregatePnLResponse => {
   return {
     ...data,
     timestamp: parseDate(data.timestamp),
