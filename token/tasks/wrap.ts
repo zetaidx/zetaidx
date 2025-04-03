@@ -1,5 +1,6 @@
 const { task } = require("hardhat/config");
 const { parseEther } = require("ethers/lib/utils");
+const ethers = require("ethers");
 
 task("wrap", "Wrap tokens to create index tokens")
   .addParam("indexToken", "Address of the index token")
@@ -13,29 +14,39 @@ task("wrap", "Wrap tokens to create index tokens")
     );
 
     // Get basket info to know which tokens we need to approve
-    const [tokens, ratios] = await indexToken.getIndexComposition();
+    const [tokens, ratios, , decimals] = await indexToken.getIndexComposition();
 
     // Calculate amount to wrap
     const wrapAmount = parseEther(taskArgs.amount);
+
+    // Helper function to adjust amounts for decimals
+    const adjustForDecimals = (amount: any, tokenDecimals: number) => {
+      if (tokenDecimals < 18) {
+        return amount.div(ethers.BigNumber.from(10).pow(18 - tokenDecimals));
+      } else if (tokenDecimals > 18) {
+        return amount.mul(ethers.BigNumber.from(10).pow(tokenDecimals - 18));
+      }
+      return amount;
+    };
 
     // Check balances and approve each token with correct amount
     for (let i = 0; i < tokens.length; i++) {
       const token = await hre.ethers.getContractAt("IERC20", tokens[i]);
       const tokenAmount = wrapAmount.mul(ratios[i]).div(100);
+      const adjustedAmount = adjustForDecimals(tokenAmount, decimals[i]);
       
       // Check if user has sufficient balance
       const balance = await token.balanceOf(deployer.address);
-      if (balance.lt(tokenAmount)) {
-        throw new Error(`Insufficient balance for token ${tokens[i]}. Required: ${tokenAmount.toString()}, Available: ${balance.toString()}`);
+      if (balance.lt(adjustedAmount)) {
+        throw new Error(`Insufficient balance for token ${tokens[i]}. Required: ${adjustedAmount.toString()}, Available: ${balance.toString()}`);
       }
       
-      console.log(`Approving ${tokenAmount.toString()} tokens for ${tokens[i]}`);
-      await token.approve(taskArgs.indexToken, tokenAmount);
+      console.log(`Approving ${adjustedAmount.toString()} tokens for ${tokens[i]}`);
+      await token.approve(taskArgs.indexToken, adjustedAmount);
     }
 
-    // Wrap tokens
-    console.log(`Wrapping ${wrapAmount.toString()} tokens...`);
-    const wrapTx = await indexToken.wrap(wrapAmount, { gasLimit: 500000});
+    // Execute wrap
+    const wrapTx = await indexToken.wrap(wrapAmount, { gasLimit: 500000 });
     await wrapTx.wait();
-    console.log("Wrap successful!");
+    console.log(`Successfully wrapped ${taskArgs.amount} index tokens`);
   }); 
