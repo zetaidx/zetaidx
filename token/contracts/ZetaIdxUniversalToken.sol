@@ -65,15 +65,7 @@ contract ZetaIdxUniversalToken is UniversalToken {
         for (uint256 i = 0; i < basket.length; i++) {
             TokenInfo memory tokenInfo = basket[i];
             uint256 tokenAmount = (amount * tokenInfo.ratio) / TOTAL_RATIO;
-            
-            // Adjust for decimals difference
-            uint8 tokenDecimals = IERC20Metadata(tokenInfo.token).decimals();
-            if (tokenDecimals < 18) {
-                tokenAmount = tokenAmount / (10 ** (18 - tokenDecimals));
-            } else if (tokenDecimals > 18) {
-                tokenAmount = tokenAmount * (10 ** (tokenDecimals - 18));
-            }
-            
+            tokenAmount = _adjustForDecimals(tokenInfo.token, tokenAmount);
             IERC20(tokenInfo.token).transferFrom(msg.sender, address(this), tokenAmount);
         }
 
@@ -90,15 +82,7 @@ contract ZetaIdxUniversalToken is UniversalToken {
         for (uint i = 0; i < basket.length; i++) {
             TokenInfo memory tokenInfo = basket[i];
             uint256 tokenAmount = (amount * tokenInfo.ratio) / TOTAL_RATIO;
-            
-            // Adjust for decimals difference
-            uint8 tokenDecimals = IERC20Metadata(tokenInfo.token).decimals();
-            if (tokenDecimals < 18) {
-                tokenAmount = tokenAmount / (10 ** (18 - tokenDecimals));
-            } else if (tokenDecimals > 18) {
-                tokenAmount = tokenAmount * (10 ** (tokenDecimals - 18));
-            }
-            
+            tokenAmount = _adjustForDecimals(tokenInfo.token, tokenAmount);
             bool success = IERC20(tokenInfo.token).transfer(msg.sender, tokenAmount);
             if (!success) revert TransferFailed();
         }
@@ -138,5 +122,15 @@ contract ZetaIdxUniversalToken is UniversalToken {
 
     function basketLength() external view returns (uint256) {
         return basket.length;
+    }
+
+    function _adjustForDecimals(address token, uint256 amount) internal view returns (uint256) {
+        uint8 tokenDecimals = IERC20Metadata(token).decimals();
+        if (tokenDecimals < 18) {
+            return amount / (10 ** (18 - tokenDecimals));
+        } else if (tokenDecimals > 18) {
+            return amount * (10 ** (tokenDecimals - 18));
+        }
+        return amount;
     }
 }
