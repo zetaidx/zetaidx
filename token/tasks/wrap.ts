@@ -46,7 +46,7 @@ task("wrap", "Wrap tokens to create index tokens")
     }
 
     // Execute wrap
-    const wrapTx = await indexToken.wrap(wrapAmount);
+    const wrapTx = await indexToken.wrap(wrapAmount, { gasLimit: 500000 });
     await wrapTx.wait();
     console.log(`Successfully wrapped ${taskArgs.amount} index tokens`);
   }); 
