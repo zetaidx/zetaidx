@@ -16,7 +16,7 @@ task("initializeIndex", "Initializes the index basket")
       contractAddr
     );
 
-    const tx = await contract.initializeIndex(tokens, ratios, priceSymbols);
+    const tx = await contract.initializeIndex(tokens, ratios, priceSymbols, { gasLimit: 5000000});
     console.log("initializeIndex tx:", tx.hash);
     await tx.wait();
     console.log("✅ Index initialized successfully.");

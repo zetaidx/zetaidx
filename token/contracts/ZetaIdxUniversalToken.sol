@@ -3,12 +3,14 @@ pragma solidity ^0.8.26;
 
 import "@zetachain/standard-contracts/contracts/token/contracts/zetachain/UniversalToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract ZetaIdxUniversalToken is UniversalToken {
     struct TokenInfo {
         address token;
         uint256 ratio; // Percentage (1-100)
         string priceSymbol; // symbol used to query price info
+        uint8 decimals; // token decimals
     }
 
     TokenInfo[] public basket;
@@ -44,10 +46,12 @@ contract ZetaIdxUniversalToken is UniversalToken {
         uint256 totalRatio;
         for (uint i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0) || ratios[i] == 0 || ratios[i] > 100) revert InvalidInput();
+            uint8 decimals = IERC20Metadata(tokens[i]).decimals();
             basket.push(TokenInfo({
                 token: tokens[i],
                 ratio: ratios[i],
-                priceSymbol: priceSymbols[i]
+                priceSymbol: priceSymbols[i],
+                decimals: decimals
             }));
             totalRatio += ratios[i];
         }
@@ -64,6 +68,14 @@ contract ZetaIdxUniversalToken is UniversalToken {
         for (uint256 i = 0; i < basket.length; i++) {
             TokenInfo memory tokenInfo = basket[i];
             uint256 tokenAmount = (amount * tokenInfo.ratio) / TOTAL_RATIO;
+            
+            // Adjust for decimals difference
+            if (tokenInfo.decimals < 18) {
+                tokenAmount = tokenAmount / (10 ** (18 - tokenInfo.decimals));
+            } else if (tokenInfo.decimals > 18) {
+                tokenAmount = tokenAmount * (10 ** (tokenInfo.decimals - 18));
+            }
+            
             IERC20(tokenInfo.token).transferFrom(msg.sender, address(this), tokenAmount);
         }
 
@@ -81,6 +93,13 @@ contract ZetaIdxUniversalToken is UniversalToken {
             TokenInfo memory tokenInfo = basket[i];
             uint256 tokenAmount = (amount * tokenInfo.ratio) / TOTAL_RATIO;
             
+            // Adjust for decimals difference
+            if (tokenInfo.decimals < 18) {
+                tokenAmount = tokenAmount / (10 ** (18 - tokenInfo.decimals));
+            } else if (tokenInfo.decimals > 18) {
+                tokenAmount = tokenAmount * (10 ** (tokenInfo.decimals - 18));
+            }
+            
             bool success = IERC20(tokenInfo.token).transfer(msg.sender, tokenAmount);
             if (!success) revert TransferFailed();
         }
@@ -92,26 +111,30 @@ contract ZetaIdxUniversalToken is UniversalToken {
     function getIndexComposition() external view returns (
         address[] memory tokens,
         uint256[] memory ratios,
-        string[] memory priceSymbols
+        string[] memory priceSymbols,
+        uint8[] memory decimals
     ) {
         tokens = new address[](basket.length);
         ratios = new uint256[](basket.length);
         priceSymbols = new string[](basket.length);
+        decimals = new uint8[](basket.length);
 
         for (uint i = 0; i < basket.length; i++) {
             tokens[i] = basket[i].token;
             ratios[i] = basket[i].ratio;
             priceSymbols[i] = basket[i].priceSymbol;
+            decimals[i] = basket[i].decimals;
         }
     }
 
     function getTokenInfo(uint256 index) external view returns (
         address token,
         uint256 ratio,
-        string memory priceSymbol
+        string memory priceSymbol,
+        uint8 decimals
     ) {
         TokenInfo memory t = basket[index];
-        return (t.token, t.ratio, t.priceSymbol);
+        return (t.token, t.ratio, t.priceSymbol, t.decimals);
     }
 
     function basketLength() external view returns (uint256) {
