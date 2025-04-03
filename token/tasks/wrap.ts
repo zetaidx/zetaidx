@@ -47,6 +47,12 @@ task("wrap", "Wrap tokens to create index tokens")
 
     // Execute wrap
     const wrapTx = await indexToken.wrap(wrapAmount, { gasLimit: 500000 });
-    await wrapTx.wait();
+    const receipt = await wrapTx.wait();
     console.log(`Successfully wrapped ${taskArgs.amount} index tokens`);
+    console.log('Transaction details:');
+    console.log(`- Transaction hash: ${receipt.transactionHash}`);
+    console.log(`- Block number: ${receipt.blockNumber}`);
+    console.log(`- Gas used: ${receipt.gasUsed.toString()}`);
+    console.log(`- From: ${receipt.from}`);
+    console.log(`- To: ${receipt.to}`);
   }); 
