@@ -18,10 +18,16 @@ task("wrap", "Wrap tokens to create index tokens")
     // Calculate amount to wrap
     const wrapAmount = parseEther(taskArgs.amount);
 
-    // Approve each token with correct amount
+    // Check balances and approve each token with correct amount
     for (let i = 0; i < tokens.length; i++) {
       const token = await hre.ethers.getContractAt("IERC20", tokens[i]);
       const tokenAmount = wrapAmount.mul(ratios[i]).div(100);
+      
+      // Check if user has sufficient balance
+      const balance = await token.balanceOf(deployer.address);
+      if (balance.lt(tokenAmount)) {
+        throw new Error(`Insufficient balance for token ${tokens[i]}. Required: ${tokenAmount.toString()}, Available: ${balance.toString()}`);
+      }
       
       console.log(`Approving ${tokenAmount.toString()} tokens for ${tokens[i]}`);
       await token.approve(taskArgs.indexToken, tokenAmount);
