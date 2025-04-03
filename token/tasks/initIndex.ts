@@ -25,9 +25,9 @@ task("initializeIndex", "Initializes the index basket")
     console.log(`📦 Basket contains ${length} tokens:`);
 
     for (let i = 0; i < length; i++) {
-      const [token, ratio, priceSymbol] = await contract.getTokenInfo(i);
+      const [token, ratio, priceSymbol, decimals] = await contract.getTokenInfo(i);
       console.log(
-        `- Token ${i}: ${token} (Ratio: ${ratio.toString()}, Price Symbol: ${priceSymbol})`
+        `- Token ${i}: ${token} (Ratio: ${ratio.toString()}, Price Symbol: ${priceSymbol}, Decimals: ${decimals})`
       );
     }
   });

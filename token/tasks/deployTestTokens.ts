@@ -8,9 +8,9 @@ task("deployTestTokens", "Deploys 3 test ERC20 tokens").setAction(
     const TestToken = await hre.ethers.getContractFactory("TestToken");
 
     const tokens = [
-      { name: "Mock BTC", symbol: "mBTC" },
-      { name: "Mock ETH", symbol: "mETH" },
-      { name: "Mock DOGE", symbol: "mDOGE" },
+      { name: "Mock BTC", symbol: "mBTC", decimals: 8 },
+      { name: "Mock ETH", symbol: "mETH", decimals: 18 },
+      { name: "Mock DOGE", symbol: "mDOGE", decimals: 18 },
     ];
 
     const addresses = [];
@@ -18,6 +18,7 @@ task("deployTestTokens", "Deploys 3 test ERC20 tokens").setAction(
       const instance = await TestToken.deploy(
         token.name,
         token.symbol,
+        token.decimals,
         hre.ethers.utils.parseEther("1000000")
       );
       await instance.deployed();
