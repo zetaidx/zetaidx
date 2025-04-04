@@ -1,5 +1,78 @@
 import type { IndexToken } from "./types";
 
+export const mockTokens: Token[] = [
+  {
+    id: "usdc",
+    name: "USD Coin",
+    symbol: "USDC",
+    price: 1.0,
+    type: "stablecoin",
+  },
+  {
+    id: "usdt",
+    name: "Tether",
+    symbol: "USDT",
+    price: 1.0,
+    type: "stablecoin",
+  },
+  {
+    id: "dai",
+    name: "Dai",
+    symbol: "DAI",
+    price: 1.0,
+    type: "stablecoin",
+  },
+  {
+    id: "eth",
+    name: "Ethereum",
+    symbol: "ETH",
+    price: 2000.0,
+    type: "token",
+  },
+  {
+    id: "doge",
+    name: "Dogecoin",
+    symbol: "DOGE",
+    price: 0.1,
+    type: "token",
+  },
+  {
+    id: "shib",
+    name: "Shiba Inu",
+    symbol: "SHIB",
+    price: 0.00001,
+    type: "token",
+  },
+  {
+    id: "aave",
+    name: "Aave",
+    symbol: "AAVE",
+    price: 80.0,
+    type: "token",
+  },
+  {
+    id: "uni",
+    name: "Uniswap",
+    symbol: "UNI",
+    price: 5.0,
+    type: "token",
+  },
+  {
+    id: "comp",
+    name: "Compound",
+    symbol: "COMP",
+    price: 40.0,
+    type: "token",
+  },
+  {
+    id: "link",
+    name: "Chainlink",
+    symbol: "LINK",
+    price: 10.0,
+    type: "token",
+  },
+];
+
 export const mockIndexes: IndexToken[] = [
   {
     id: "zidx-meme",

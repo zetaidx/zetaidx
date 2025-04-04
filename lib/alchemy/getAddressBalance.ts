@@ -1,3 +1,5 @@
+"use client";
+
 import { TokenBalancesResponse } from "alchemy-sdk";
 import { createAlchemyClient } from "./client";
 import { getTokenMetadata } from "./getTokenMetadata";
