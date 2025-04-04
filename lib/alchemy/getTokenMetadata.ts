@@ -1,5 +1,5 @@
 import { Network } from "alchemy-sdk";
-import { callAlchemyApi } from "./client";
+import { createAlchemyClient } from "./client";
 
 export interface TokenMetadata {
   name: string | null;
@@ -19,12 +19,9 @@ export async function getTokenMetadata(
   network: Network
 ): Promise<TokenMetadata> {
   try {
-    // Use direct fetch for token metadata
-    const metadata = (await callAlchemyApi(
-      network,
-      "alchemy_getTokenMetadata",
-      [tokenAddress]
-    )) as Partial<TokenMetadata>;
+    const alchemy = createAlchemyClient(network);
+
+    const metadata = await alchemy.core.getTokenMetadata(tokenAddress);
     // Ensure we return a complete TokenMetadata object
     return {
       name: metadata?.name || null,
@@ -33,7 +30,6 @@ export async function getTokenMetadata(
       logo: metadata?.logo || null,
     };
   } catch (err) {
-    // Fallback to minimal metadata if fetch fails
     console.error(`Error fetching token metadata for ${network}:`, err);
     return {
       name: null,
@@ -42,18 +38,4 @@ export async function getTokenMetadata(
       logo: null,
     };
   }
-}
-
-/**
- * Generate placeholder logo URL for tokens that don't have a logo
- * @param symbol Token symbol or contract address
- * @returns URL to a placeholder logo
- */
-export function getTokenLogoUrl(
-  symbol: string | null,
-  tokenAddress: string
-): string {
-  return symbol
-    ? `https://api.dicebear.com/6.x/shapes/svg?seed=${symbol}`
-    : `https://api.dicebear.com/6.x/shapes/svg?seed=${tokenAddress}`;
 }
