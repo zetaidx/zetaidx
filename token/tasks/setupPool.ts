@@ -1,5 +1,6 @@
 const { task } = require("hardhat/config");
 const { parseEther, formatEther } = require("ethers/lib/utils");
+const ethers = require("ethers");
 
 task("setupPool", "Set up Uniswap liquidity pool for index token")
   .addParam("indexToken", "Address of the index token")
@@ -46,35 +47,42 @@ task("setupPool", "Set up Uniswap liquidity pool for index token")
 
     // Get token amounts for liquidity
     const wzetaAmount = parseEther("100"); // 100 WZETA
-    const indexAmount = parseEther("100"); // 100 index tokens
+    const indexAmount = parseEther("100");
 
     // Wrap some tokens if needed
     if (indexBalance.lt(indexAmount)) {
       const wrapAmount = parseEther("100"); // Wrap 100 tokens
 
-      // Get ratios from the contract
-      const token1Basket = await indexToken.basket(0);
-      const token2Basket = await indexToken.basket(1);
-      const token3Basket = await indexToken.basket(2);
-
-      // Extract token info from basket - the ratio is at index 1
-      const token1Ratio = token1Basket[1];
-      const token2Ratio = token2Basket[1];
-      const token3Ratio = token3Basket[1];
+      // Get ratios and decimals from the contract
+      const [tokens, ratios, , decimals] = await indexToken.getIndexComposition();
 
       // Calculate amounts based on ratios (ratios are percentages 1-100)
-      const token1Amount = wrapAmount.mul(token1Ratio).div(100);
-      const token2Amount = wrapAmount.mul(token2Ratio).div(100);
-      const token3Amount = wrapAmount.mul(token3Ratio).div(100);
+      const token1Amount = wrapAmount.mul(ratios[0]).div(100);
+      const token2Amount = wrapAmount.mul(ratios[1]).div(100);
+      const token3Amount = wrapAmount.mul(ratios[2]).div(100);
+
+      // Adjust amounts for decimals
+      const adjustForDecimals = (amount: any, tokenDecimals: number) => {
+        if (tokenDecimals < 18) {
+          return amount.div(ethers.BigNumber.from(10).pow(18 - tokenDecimals));
+        } else if (tokenDecimals > 18) {
+          return amount.mul(ethers.BigNumber.from(10).pow(tokenDecimals - 18));
+        }
+        return amount;
+      };
+
+      const adjustedToken1Amount = adjustForDecimals(token1Amount, decimals[0]);
+      const adjustedToken2Amount = adjustForDecimals(token2Amount, decimals[1]);
+      const adjustedToken3Amount = adjustForDecimals(token3Amount, decimals[2]);
 
       // Approve test tokens with correct amounts
-      await token1.approve(taskArgs.indexToken, token1Amount, {
+      await token1.approve(taskArgs.indexToken, adjustedToken1Amount, {
         gasLimit: 100000,
       });
-      await token2.approve(taskArgs.indexToken, token2Amount, {
+      await token2.approve(taskArgs.indexToken, adjustedToken2Amount, {
         gasLimit: 100000,
       });
-      await token3.approve(taskArgs.indexToken, token3Amount, {
+      await token3.approve(taskArgs.indexToken, adjustedToken3Amount, {
         gasLimit: 100000,
       });
 

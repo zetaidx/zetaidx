@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
+import { BigNumber, Contract } from "ethers";
 
 import { ZetaIdxUniversalToken } from "../typechain-types";
 import { TestToken } from "../typechain-types";
@@ -15,20 +16,33 @@ describe("ZetaIdxUniversalToken", function () {
 
   const TOKEN_NAMES = ["Test BTC", "Test ETH", "Test DOGE"];
   const TOKEN_PRICE_SYMBOLS = ["tBTC", "tETH", "tDOGE"];
-  const INITIAL_SUPPLY = ethers.utils.parseEther("1000000");
+  const TOKEN_DECIMALS = [8, 18, 18];
   const RATIOS = [50, 30, 20]; // 50% BTC, 30% ETH, 20% DOGE
+  const INITIAL_SUPPLY = ethers.utils.parseEther("1000000");
   const GAS_LIMIT = 1000000;
+
+  async function adjustForDecimals(token: Contract, amount: BigNumber): Promise<BigNumber> {
+    const decimals = await token.decimals();
+    if (decimals < 18) {
+      return amount.div(BigNumber.from(10).pow(18 - decimals));
+    } else if (decimals > 18) {
+      return amount.mul(BigNumber.from(10).pow(decimals - 18));
+    }
+    return amount;
+  }
 
   beforeEach(async function () {
     [owner, user] = await ethers.getSigners();
 
     // Deploy test tokens
     testTokens = [];
+    testTokens = [];
+    const TestToken = await ethers.getContractFactory("TestToken");
     for (let i = 0; i < TOKEN_NAMES.length; i++) {
-      const TestToken = await ethers.getContractFactory("TestToken");
       const token = await TestToken.deploy(
         TOKEN_NAMES[i],
         TOKEN_PRICE_SYMBOLS[i],
+        TOKEN_DECIMALS[i],
         INITIAL_SUPPLY
       );
       testTokens.push(token);
@@ -64,17 +78,18 @@ describe("ZetaIdxUniversalToken", function () {
 
     // Transfer some test tokens to user
     for (const token of testTokens) {
-      await token.transfer(user.address, ethers.utils.parseEther("1000"));
+      await token.transfer(user.address, ethers.utils.parseUnits("1000", await token.decimals()));
     }
   });
 
   describe("Initialization", function () {
     it("should initialize with correct tokens and ratios", async function () {
       for (let i = 0; i < testTokens.length; i++) {
-        const [token, ratio, symbol] = await indexToken.getTokenInfo(i);
+        const [token, ratio, symbol, decimals] = await indexToken.getTokenInfo(i);
         expect(token).to.equal(testTokens[i].address);
         expect(ratio).to.equal(RATIOS[i]);
         expect(symbol).to.equal(TOKEN_PRICE_SYMBOLS[i]);
+        expect(decimals).to.equal(TOKEN_DECIMALS[i]);
       }
     });
 
@@ -133,7 +148,7 @@ describe("ZetaIdxUniversalToken", function () {
 
       // Approve tokens
       for (let i = 0; i < testTokens.length; i++) {
-        const tokenAmount = wrapAmount.mul(RATIOS[i]).div(100);
+        const tokenAmount = await adjustForDecimals(testTokens[i], wrapAmount.mul(RATIOS[i]).div(100));
         await testTokens[i]
           .connect(user)
           .approve(indexToken.address, tokenAmount);
@@ -147,7 +162,7 @@ describe("ZetaIdxUniversalToken", function () {
 
       // Check contract received underlying tokens
       for (let i = 0; i < testTokens.length; i++) {
-        const tokenAmount = wrapAmount.mul(RATIOS[i]).div(100);
+        const tokenAmount = await adjustForDecimals(testTokens[i], wrapAmount.mul(RATIOS[i]).div(100));
         expect(await testTokens[i].balanceOf(indexToken.address)).to.equal(
           tokenAmount
         );
@@ -183,7 +198,7 @@ describe("ZetaIdxUniversalToken", function () {
 
       // Approve tokens
       for (let i = 0; i < testTokens.length; i++) {
-        const tokenAmount = wrapAmount.mul(RATIOS[i]).div(100);
+        const tokenAmount = await adjustForDecimals(testTokens[i], wrapAmount.mul(RATIOS[i]).div(100));
         await testTokens[i]
           .connect(user)
           .approve(indexToken.address, tokenAmount);
@@ -200,7 +215,7 @@ describe("ZetaIdxUniversalToken", function () {
       // Check initial balances
       expect(await indexToken.balanceOf(user.address)).to.equal(wrapAmount);
       for (let i = 0; i < testTokens.length; i++) {
-        const tokenAmount = wrapAmount.mul(RATIOS[i]).div(100);
+        const tokenAmount = await adjustForDecimals(testTokens[i], wrapAmount.mul(RATIOS[i]).div(100));
         expect(await testTokens[i].balanceOf(indexToken.address)).to.equal(
           tokenAmount
         );
@@ -219,9 +234,9 @@ describe("ZetaIdxUniversalToken", function () {
 
       // Check user received underlying tokens
       for (let i = 0; i < testTokens.length; i++) {
-        const tokenAmount = unwrapAmount.mul(RATIOS[i]).div(100);
+        const tokenAmount = await adjustForDecimals(testTokens[i], unwrapAmount.mul(RATIOS[i]).div(100));
         expect(await testTokens[i].balanceOf(user.address)).to.equal(
-          ethers.utils.parseEther("1000").sub(tokenAmount)
+          ethers.utils.parseUnits("1000", TOKEN_DECIMALS[i]).sub(tokenAmount)
         );
       }
     });
