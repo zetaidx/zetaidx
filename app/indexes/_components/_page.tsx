@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { IndexGrid } from "./index-grid";
 import { IndexList } from "./index-list";
-import { mockIndexes } from "@/lib/mock-data";
+import { indexes } from "@/lib/indexes-data";
 
 const themes = ["All", "DeFi", "Meme", "Blue-Chip", "Gaming", "Layer 1"];
 const sortOptions = ["TVL", "24h Volume", "7d Performance", "30d Performance"];
@@ -27,8 +27,8 @@ export default function IndexesPage() {
   // Filter indexes by theme
   const filteredIndexes =
     theme === "All"
-      ? mockIndexes
-      : mockIndexes.filter((index) => index.theme === theme);
+      ? indexes
+      : indexes.filter((index) => index.theme === theme);
 
   return (
     <div className="container py-8 md:py-12">
@@ -37,7 +37,8 @@ export default function IndexesPage() {
           Explore Index Tokens
         </h1>
         <p className="text-muted-foreground">
-          Diversified exposure across crypto markets — backed by decentralized assets
+          Diversified exposure across crypto markets — backed by decentralized
+          assets
         </p>
       </div>
 

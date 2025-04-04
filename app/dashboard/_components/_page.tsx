@@ -21,12 +21,6 @@ export default function DashboardPage() {
 
   const walletAddress = user?.address;
 
-  // Calculate total portfolio value
-  const calculateTotalValue = () => {
-    // Simplified calculation
-    return 2580.42;
-  };
-
   return (
     <div className="container py-8 md:py-12">
       <div className="space-y-2 mb-8">
@@ -45,19 +39,9 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Wallet Connected</CardTitle>
-                  <CardDescription>
-                    {walletAddress} | Ethereum Mainnet
-                  </CardDescription>
+                  <CardDescription>{walletAddress}</CardDescription>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">
-                      Total Value
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(calculateTotalValue())}
-                    </div>
-                  </div>
                   <Button variant="outline" size="sm" onClick={() => logout()}>
                     Disconnect
                   </Button>

@@ -1,6 +1,6 @@
-import type { IndexToken, Token } from "./types";
+import type { IndexToken } from "./types";
 
-export const mockTokens: Token[] = [
+export const mockTokens: any[] = [
   {
     id: "usdc",
     name: "USD Coin",
@@ -109,6 +109,8 @@ export const mockIndexes: IndexToken[] = [
   },
   {
     id: "zidx-blue",
+    address: process.env
+      .NEXT_PUBLIC_INDEX_TOKEN_ADDRESS_ZIDX_BLUE as `0x${string}`,
     name: "Blue Chip",
     symbol: "ZIDX-BLUE",
     type: "token",
