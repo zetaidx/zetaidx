@@ -2,6 +2,8 @@ import type { IndexToken, Token, TokenComposition } from "./types";
 import { getContractConfig } from "./config";
 import { createPublicClient, http, getContract } from "viem";
 import { getChainConfig } from "./config";
+import { useState } from "react";
+import { useEffect } from "react";
 
 // ABI fragment for getIndexComposition function
 const indexTokenAbi = [
@@ -27,79 +29,6 @@ const indexTokenAbi = [
     ],
     stateMutability: "view",
     type: "function",
-  },
-];
-
-export const tokens: Token[] = [
-  {
-    id: "usdc",
-    name: "USD Coin",
-    symbol: "USDC",
-    price: 1.0,
-    type: "stablecoin",
-  },
-  {
-    id: "usdt",
-    name: "Tether",
-    symbol: "USDT",
-    price: 1.0,
-    type: "stablecoin",
-  },
-  {
-    id: "dai",
-    name: "Dai",
-    symbol: "DAI",
-    price: 1.0,
-    type: "stablecoin",
-  },
-  {
-    id: "eth",
-    name: "Ethereum",
-    symbol: "ETH",
-    price: 2000.0,
-    type: "token",
-  },
-  {
-    id: "doge",
-    name: "Dogecoin",
-    symbol: "DOGE",
-    price: 0.1,
-    type: "token",
-  },
-  {
-    id: "shib",
-    name: "Shiba Inu",
-    symbol: "SHIB",
-    price: 0.00001,
-    type: "token",
-  },
-  {
-    id: "aave",
-    name: "Aave",
-    symbol: "AAVE",
-    price: 80.0,
-    type: "token",
-  },
-  {
-    id: "uni",
-    name: "Uniswap",
-    symbol: "UNI",
-    price: 5.0,
-    type: "token",
-  },
-  {
-    id: "comp",
-    name: "Compound",
-    symbol: "COMP",
-    price: 40.0,
-    type: "token",
-  },
-  {
-    id: "link",
-    name: "Chainlink",
-    symbol: "LINK",
-    price: 10.0,
-    type: "token",
   },
 ];
 
@@ -182,3 +111,28 @@ export async function getIndexComposition(
     return indexData.composition;
   }
 }
+
+export const useIndexComposition = (address: `0x${string}`) => {
+  const [composition, setComposition] = useState<TokenComposition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    const id = indexes.find(
+      (index) => index.address?.toLowerCase() === address.toLowerCase()
+    )?.id;
+    getIndexComposition(id as string)
+      .then((data) => {
+        setComposition(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching index composition:", err);
+        setError("Failed to load index composition");
+        setIsLoading(false);
+      });
+  }, [address]);
+
+  return { composition, isLoading, error };
+};
