@@ -1,6 +1,6 @@
 import type { IndexToken } from "./types";
 
-export const mockTokens: Token[] = [
+export const mockTokens: any[] = [
   {
     id: "usdc",
     name: "USD Coin",

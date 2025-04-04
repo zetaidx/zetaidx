@@ -22,7 +22,7 @@ export function UnwrapTab() {
 
   // Calculate output tokens based on index composition
   const calculateOutputs = () => {
-    return selectedIndex.composition.map((comp) => ({
+    return selectedIndex.composition!.map((comp) => ({
       token: mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0],
       amount: ((amount * comp.percentage) / 100).toFixed(6),
     }))

@@ -105,10 +105,10 @@ export async function getIndexComposition(
 
   try {
     const composition = await fetchIndexComposition(indexData.address);
-    return composition.length > 0 ? composition : indexData.composition;
+    return composition.length > 0 ? composition : indexData.composition!;
   } catch (error) {
     console.error("Error in getIndexComposition:", error);
-    return indexData.composition;
+    return indexData.composition!;
   }
 }
 

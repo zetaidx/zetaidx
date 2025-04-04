@@ -81,7 +81,7 @@ export function WrapTab() {
 
   // Initialize token inputs when index changes
   useEffect(() => {
-    const inputs = selectedIndex.composition.map((comp) => ({
+    const inputs = selectedIndex.composition!.map((comp) => ({
       token: mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0],
       amount: "",
     }));
@@ -99,7 +99,7 @@ export function WrapTab() {
     // Simplified calculation - in reality would use actual token prices and ratios
     const baseValue = numAmount * 20; // Assuming 1 index token = $20 worth of assets
     const newInputs = tokenInputs.map((input, index) => {
-      const percentage = selectedIndex.composition[index].percentage;
+      const percentage = selectedIndex.composition![index].percentage;
       const requiredValue = (baseValue * percentage) / 100;
       const tokenAmount = input.token.price
         ? (requiredValue / input.token.price).toFixed(6)
@@ -208,7 +208,7 @@ export function WrapTab() {
                 key={index}
                 token={input.token}
                 amount={input.amount}
-                percentage={selectedIndex.composition[index].percentage}
+                percentage={selectedIndex.composition![index].percentage}
                 onAmountChange={() => {}}
                 onRemove={() => {}}
                 isRemovable={false}

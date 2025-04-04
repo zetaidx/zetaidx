@@ -154,7 +154,7 @@ export const useAggregatePrice = (params: PriceQueryParams) => {
     queryFn: () => fetchAggregatePrice(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
-    enabled: params.symbols?.length > 0 && params.ratios?.length > 0, // Prevent query when arrays are empty
+    enabled: params.symbols!.length > 0 && params.ratios!.length > 0, // Prevent query when arrays are empty
   });
 };
 

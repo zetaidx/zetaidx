@@ -33,7 +33,7 @@ export async function callAlchemyApi(
   params: unknown[]
 ): Promise<unknown> {
   const baseUrl = getAlchemyBaseUrl(network);
-  const apiKey = process.env.ALCHEMY_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 
   const response = await fetch(`${baseUrl}/v2/${apiKey}`, {
     method: "POST",
