@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getIndexComposition } from "@/lib/token-data";
+import { getIndexComposition } from "@/lib/indexes-data";
 import type { TokenComposition } from "@/lib/types";
 
 /**

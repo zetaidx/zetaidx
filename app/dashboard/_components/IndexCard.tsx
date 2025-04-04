@@ -56,10 +56,6 @@ export function IndexCard({ holding }: IndexCardProps) {
     (priceData?.data[priceData?.data.length - 1]?.value || 0) *
     Number(holding.amount);
 
-  if (isCompositionLoading || isPriceLoading || isPnlLoading) {
-    return <div>Loading...</div>;
-  }
-
   if (compositionError || priceError || pnlError) {
     return (
       <div>
