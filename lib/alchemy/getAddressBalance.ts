@@ -1,17 +1,20 @@
 import { TokenBalancesResponse } from "alchemy-sdk";
-import { callAlchemyApi } from "./client";
 import { createAlchemyClient } from "./client";
-import { getTokenMetadata, getTokenLogoUrl } from "./getTokenMetadata";
+import { getTokenMetadata } from "./getTokenMetadata";
 import { supportedChains, ChainConfig } from "./supportedChains";
+import { indexes } from "../indexes-data";
+import { useEffect, useState } from "react";
+import { useUser } from "@account-kit/react";
 
 // Type for normalized token results
 export interface TokenData {
   tokenAddress: string;
   name: string | null;
   symbol: string | null;
-  balance: string;
+  amount: string;
   decimals: number;
   chain: string;
+  isIndex: boolean;
 }
 
 /**
@@ -56,7 +59,6 @@ async function getAddressBalanceForChain(
   // Use direct fetch for token balances as a fallback if needed
   let tokenBalances: TokenBalancesResponse;
   try {
-    // Try using the SDK method first
     tokenBalances = await alchemy.core.getTokenBalances(address);
 
     // Get metadata for all tokens with balance > 0
@@ -79,19 +81,23 @@ async function getAddressBalanceForChain(
       const metadata = tokenMetadataResults[index];
       const decimals = metadata.decimals || 18;
       const balanceBigInt = BigInt(token.tokenBalance || "0");
-      const balanceFormatted = balanceBigInt.toLocaleString("en-US", {
+      const balanceNumber = Number(balanceBigInt) / Math.pow(10, decimals);
+      const balanceFormatted = balanceNumber.toLocaleString("en-US", {
         maximumSignificantDigits: 6,
         minimumSignificantDigits: 1,
       });
-
+      const isIndex = indexes.some(
+        (t) => t.address?.toLowerCase() === token.contractAddress.toLowerCase()
+      );
       // Generate URL for logo (placeholder if no logo available)
       return {
         tokenAddress: token.contractAddress,
         name: metadata.name,
         symbol: metadata.symbol,
-        balance: balanceFormatted,
+        amount: balanceFormatted,
         decimals: decimals,
         chain: chainName,
+        isIndex,
       };
     });
     return tokenData;
@@ -99,4 +105,42 @@ async function getAddressBalanceForChain(
     console.error(`Error fetching tokens for ${chainName}:`, error);
     return [];
   }
+}
+
+/**
+ * React hook to fetch token balances for a given address
+ * @param address The wallet address to fetch balances for
+ * @returns Object containing tokens, loading state, and error state
+ */
+export function useAddressBalance() {
+  const user = useUser();
+  const address = user?.address;
+  const [tokens, setTokens] = useState<TokenData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!address) {
+      setIsLoading(false);
+      return;
+    }
+
+    async function fetchTokens() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await getAddressBalance(address as string);
+        setTokens(response);
+      } catch (err) {
+        console.error("Error fetching token balances:", err);
+        setError("Error loading token balances. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchTokens();
+  }, [address]);
+
+  return { tokens, isLoading, error };
 }
