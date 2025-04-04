@@ -5,9 +5,9 @@ set -o pipefail
 
 # Cleanup function
 cleanup() {
-    echo -e "\n🛑 Stopping localnet..."
-    pnpm exec hardhat localnet-stop
-    rm -f contract.json
+  echo -e "\n🛑 Stopping localnet..."
+  pnpm exec hardhat localnet-stop
+  rm -f contract.json
 }
 
 # Set up trap for cleanup on any exit
@@ -56,21 +56,23 @@ WZETA_ADDRESS=$(cat localnet.json | jq -r '.addresses[] | select(.type=="wzeta")
 FACTORY_ADDRESS=$(cat localnet.json | jq -r '.addresses[] | select(.type=="uniswapFactoryInstance") | .address')
 ROUTER_ADDRESS=$(cat localnet.json | jq -r '.addresses[] | select(.type=="uniswapRouterInstance") | .address')
 
+# Wrap index tokens
+pnpm exec hardhat wrap --network localhost --amount 100 --index-token $CONTRACT_ZETACHAIN
+
 # Set up Uniswap liquidity pool
 echo -e "\n🚀 Setting up Uniswap liquidity pool..."
-npx hardhat setupPool \
+pnpm exec hardhat setupPool \
   --network localhost \
   --index-token $CONTRACT_ZETACHAIN \
+  --index-amount 100 \
   --wzeta $WZETA_ADDRESS \
+  --wzeta-amount 100 \
   --factory $FACTORY_ADDRESS \
-  --router $ROUTER_ADDRESS \
-  --test-token1 $TEST_TOKEN1 \
-  --test-token2 $TEST_TOKEN2 \
-  --test-token3 $TEST_TOKEN3
+  --router $ROUTER_ADDRESS
 
 # Only stop localnet if stop-after-setup argument is passed
 if [ "$1" = "stop-after-setup" ]; then
-    exit 0
+  exit 0
 else
-    wait
+  wait
 fi
