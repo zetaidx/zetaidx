@@ -1,13 +1,18 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { IndexCompositionChart } from "@/components/charts/index-composition-chart"
-import { ArrowUpRight, TrendingUp, TrendingDown } from "lucide-react"
-import { formatCurrency, formatPercentage } from "@/lib/utils"
-import type { IndexToken } from "@/lib/types"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { IndexCompositionChart } from "@/components/charts/index-composition-chart";
+import { ArrowUpRight, TrendingUp, TrendingDown } from "lucide-react";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
+import type { IndexToken } from "@/lib/types";
 
 interface IndexGridProps {
-  indexes: IndexToken[]
+  indexes: IndexToken[];
 }
 
 export function IndexGrid({ indexes }: IndexGridProps) {
@@ -23,12 +28,16 @@ export function IndexGrid({ indexes }: IndexGridProps) {
                 </div>
                 <div>
                   <h3 className="font-semibold">{index.name}</h3>
-                  <p className="text-sm text-muted-foreground">{index.symbol}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {index.symbol}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-col items-end">
                 <div
-                  className={`flex items-center text-sm font-medium ${index.performance7d >= 0 ? "text-green-500" : "text-red-500"}`}
+                  className={`flex items-center text-sm font-medium ${
+                    index.performance7d >= 0 ? "text-green-500" : "text-red-500"
+                  }`}
                 >
                   {index.performance7d >= 0 ? (
                     <TrendingUp className="h-3.5 w-3.5 mr-1" />
@@ -40,12 +49,14 @@ export function IndexGrid({ indexes }: IndexGridProps) {
                 <p className="text-xs text-muted-foreground">7d</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">{index.description}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {index.description}
+            </p>
           </CardHeader>
           <CardContent className="pb-2">
             <div className="flex items-center gap-4">
               <div className="w-24 h-24">
-                <IndexCompositionChart composition={index.composition} />
+                <IndexCompositionChart indexId={index.id} />
               </div>
               <div className="space-y-2">
                 <div>
@@ -54,11 +65,19 @@ export function IndexGrid({ indexes }: IndexGridProps) {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">24h Volume</p>
-                  <p className="font-medium">{formatCurrency(index.volume24h)}</p>
+                  <p className="font-medium">
+                    {formatCurrency(index.volume24h)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">30d</p>
-                  <p className={`font-medium ${index.performance30d >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  <p
+                    className={`font-medium ${
+                      index.performance30d >= 0
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
                     {formatPercentage(index.performance30d)}
                   </p>
                 </div>
@@ -76,6 +95,5 @@ export function IndexGrid({ indexes }: IndexGridProps) {
         </Card>
       ))}
     </div>
-  )
+  );
 }
-

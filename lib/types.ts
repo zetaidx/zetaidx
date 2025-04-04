@@ -18,5 +18,6 @@ export interface IndexToken extends Token {
   volume24h: number;
   performance7d: number;
   performance30d: number;
-  composition: TokenComposition[];
+  composition?: TokenComposition[];
+  address?: `0x${string}`;
 }
