@@ -9,16 +9,10 @@ export interface ChainConfig {
 
 export const supportedChains: ChainConfig[] = [
   {
-    network: Network.ETH_MAINNET,
-    name: "Ethereum",
-    baseUrl: "https://eth-mainnet.g.alchemy.com",
-    networkId: 1,
-  },
-  {
-    network: Network.BASE_MAINNET,
-    name: "Base",
-    baseUrl: "https://base-mainnet.g.alchemy.com",
-    networkId: 8453,
+    network: Network.ZETACHAIN_TESTNET,
+    name: "ZetaChain Athens",
+    baseUrl: "https://zetachain-athens-rpc.publicnode.com",
+    networkId: 7001,
   },
 ];
 
