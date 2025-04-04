@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuthModal, useLogout, useSignerStatus } from "@account-kit/react";
+import { useAuthModal, useSignerStatus } from "@account-kit/react";
 import { Wallet } from "lucide-react";
 
 export function WalletConnect() {
