@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { IndexGrid } from "./index-grid";
 import { IndexList } from "./index-list";
-import { indexes } from "@/lib/indexes-data";
+import { getStaticIndexData } from "@/lib/indexes-data";
 
 const themes = ["All", "DeFi", "Meme", "Blue-Chip", "Gaming", "Layer 1"];
 const sortOptions = ["TVL", "24h Volume", "7d Performance", "30d Performance"];
@@ -24,6 +24,7 @@ export default function IndexesPage() {
   const [theme, setTheme] = useState("All");
   const [sortBy, setSortBy] = useState("TVL");
 
+  const indexes = getStaticIndexData()
   // Filter indexes by theme
   const filteredIndexes =
     theme === "All"

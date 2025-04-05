@@ -32,22 +32,38 @@ const indexTokenAbi = [
   },
 ];
 
-export const indexes: IndexToken[] = [
-  {
-    id: "zidx-blue",
-    address: process.env
-      .NEXT_PUBLIC_INDEX_TOKEN_ADDRESS_ZIDX_BLUE as `0x${string}`,
-    name: "Blue Chip",
-    symbol: "ZIDX-BLUE",
-    type: "token",
-    description: "Major cryptocurrencies with established market presence",
-    theme: "Blue-Chip",
-    tvl: 8750000,
-    volume24h: 1250000,
-    performance7d: 2.1,
-    performance30d: 12.3,
-  },
-];
+// Singleton pattern for indexes
+let indexesInstance: IndexToken[] | null = null;
+
+/**
+ * Get the indexes singleton instance
+ * This ensures the same object is returned every time to prevent rerenders
+ * @returns The indexes array
+ */
+export function getStaticIndexData(): IndexToken[] {
+  if (indexesInstance === null) {
+    indexesInstance = [
+      {
+        id: "zidx-blue",
+        address: "0x827586715f039bC6133d6D39Edbf8044bB32bA22",
+        name: "Blue Chip",
+        symbol: "ZIDX-TOTAL-BLUE-MOCK",
+        type: "token",
+        description: "Major cryptocurrencies with established market presence",
+        theme: "Blue-Chip",
+        tvl: 8750000,
+        volume24h: 1250000,
+        performance7d: 2.1,
+        performance30d: 12.3,
+      },
+    ];
+  }
+  
+  return indexesInstance;
+}
+
+// For backward compatibility, export indexes as a getter
+export const indexes = getStaticIndexData();
 
 /**
  * Fetches the composition of an index token from the blockchain
@@ -97,7 +113,7 @@ export async function fetchIndexComposition(
 export async function getIndexComposition(
   indexId: string
 ): Promise<TokenComposition[]> {
-  const indexData = indexes.find((index) => index.id === indexId);
+  const indexData = getStaticIndexData().find((index) => index.id === indexId);
 
   if (!indexData?.address) {
     return indexData?.composition || [];
@@ -119,7 +135,7 @@ export const useIndexComposition = (address: `0x${string}`) => {
   useEffect(() => {
     setIsLoading(true);
     setError(null);
-    const id = indexes.find(
+    const id = getStaticIndexData().find(
       (index) => index.address?.toLowerCase() === address.toLowerCase()
     )?.id;
     getIndexComposition(id as string)

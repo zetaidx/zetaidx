@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAddressBalance } from "@/lib/alchemy/getAddressBalance";
 import { IndexCard, IndexTokenData } from "./IndexCard";
 import { useEffect, useState } from "react";
-import { indexes } from "@/lib/indexes-data";
+import { getStaticIndexData } from "@/lib/indexes-data";
 
 export function IndexHoldings() {
   const { tokens, isLoading, error } = useAddressBalance();
@@ -21,7 +21,7 @@ export function IndexHoldings() {
       .filter((token) => token.isIndex)
       .map((token) => {
         // Find matching index from our index data
-        const indexData = indexes.find(
+        const indexData = getStaticIndexData().find(
           (idx) =>
             idx.address?.toLowerCase() === token.tokenAddress.toLowerCase()
         );

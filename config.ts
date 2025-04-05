@@ -34,7 +34,7 @@ export const config = createConfig(
       apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY as string,
     }),
     chain: getChainConfig(),
-    ssr: true, // set to false if you're not using server-side rendering
+    ssr: false,
     enablePopupOauth: true,
   },
   uiConfig
