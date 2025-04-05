@@ -4,7 +4,7 @@ import { TokenBalancesResponse } from "alchemy-sdk";
 import { createAlchemyClient } from "./client";
 import { getTokenMetadata } from "./getTokenMetadata";
 import { supportedChains, ChainConfig } from "./supportedChains";
-import { indexes } from "../indexes-data";
+import { getStaticIndexData } from "../indexes-data";
 import { useEffect, useState } from "react";
 import { useUser } from "@account-kit/react";
 
@@ -88,7 +88,7 @@ async function getAddressBalanceForChain(
         maximumSignificantDigits: 6,
         minimumSignificantDigits: 1,
       });
-      const isIndex = indexes.some(
+      const isIndex = getStaticIndexData().some(
         (t) => t.address?.toLowerCase() === token.contractAddress.toLowerCase()
       );
       // Generate URL for logo (placeholder if no logo available)
