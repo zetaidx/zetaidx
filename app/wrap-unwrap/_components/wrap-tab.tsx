@@ -151,7 +151,6 @@ export function WrapTab() {
 
       // Get token contracts from the composition
       for (const comp of selectedIndex.composition || []) {
-        const comp = selectedIndex.composition?.[i];
         if (!comp || !comp.address) {
           throw new Error(`Missing token address for ${comp?.token}`);
         }
