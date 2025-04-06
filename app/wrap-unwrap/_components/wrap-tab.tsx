@@ -121,6 +121,16 @@ export function WrapTab() {
     calculateRequiredAmounts(amount);
   };
 
+  // Helper function to adjust amounts for decimals
+  const adjustForDecimals = (amount: ethers.BigNumber, decimals: number) => {
+    if (decimals < 18) {
+      return amount.div(ethers.BigNumber.from(10).pow(18 - decimals));
+    } else if (decimals > 18) {
+      return amount.mul(ethers.BigNumber.from(10).pow(decimals - 18));
+    }
+    return amount;
+  };
+
   // Handle wrap action
   const handleWrap = async () => {
     if (!user?.address) {
@@ -137,7 +147,7 @@ export function WrapTab() {
       const signer = provider.getSigner();
 
       // Convert desired amount to big number (in wei)
-      const amount = ethers.utils.parseEther(desiredAmount);
+      const amount = ethers.utils.parseUnits(desiredAmount, 18);
 
       // Get token contracts from the composition
       for (const comp of selectedIndex.composition || []) {
@@ -156,29 +166,37 @@ export function WrapTab() {
           [
             "function balanceOf(address) view returns (uint256)",
             "function approve(address, uint256) returns (bool)",
+            "function decimals() view returns (uint8)",
           ],
           signer
         );
 
+        // Get token decimals once
+        const decimals = await tokenContract.decimals();
+        
+        // Adjust amount for decimals
+        const adjustedAmount = adjustForDecimals(tokenAmount, decimals);
+
         // Check user balance
         const balance = await tokenContract.balanceOf(user.address);
-        if (balance.lt(tokenAmount)) {
+        if (balance.lt(adjustedAmount)) {
           throw new Error(
             `Insufficient balance for ${
               comp.token
-            }. Required: ${ethers.utils.formatEther(
-              tokenAmount
-            )}, Available: ${ethers.utils.formatEther(balance)}`
+            }. Required: ${ethers.utils.formatUnits(
+              adjustedAmount,
+              decimals
+            )}, Available: ${ethers.utils.formatUnits(balance, decimals)}`
           );
         }
 
         // Approve token spend
         console.log(
-          `Approving ${ethers.utils.formatEther(tokenAmount)} ${comp.token}`
+          `Approving ${ethers.utils.formatUnits(adjustedAmount, decimals)} ${comp.token}`
         );
         const approveTx = await tokenContract.approve(
           selectedIndex.address,
-          tokenAmount
+          adjustedAmount
         );
         await approveTx.wait();
       }
