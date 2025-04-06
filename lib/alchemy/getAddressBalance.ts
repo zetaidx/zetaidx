@@ -85,7 +85,7 @@ async function getAddressBalanceForChain(
       const balanceBigInt = BigInt(token.tokenBalance || "0");
       const balanceNumber = Number(balanceBigInt) / Math.pow(10, decimals);
       const balanceFormatted = balanceNumber.toLocaleString("en-US", {
-        maximumSignificantDigits: 6,
+        maximumSignificantDigits: decimals,
         minimumSignificantDigits: 1,
       });
       const isIndex = getStaticIndexData().some(

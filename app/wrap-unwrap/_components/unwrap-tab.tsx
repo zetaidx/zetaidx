@@ -35,7 +35,9 @@ export function UnwrapTab() {
   const indexes = tokens.filter((token) => token.isIndex);
   const [selectedIndex, setSelectedIndex] = useState<TokenData>(indexes[0]);
   const { composition } = useIndexComposition(selectedIndex?.tokenAddress);
-  const [amount, setAmount] = useState<number>(Number(selectedIndex?.amount));
+  const [amount, setAmount] = useState<number>(
+    Number(selectedIndex?.amount) * 10 ** (selectedIndex?.decimals || 0)
+  );
   const {
     data: priceData,
     isLoading: isPriceLoading,
@@ -46,7 +48,8 @@ export function UnwrapTab() {
     interval: "24h",
   });
   const totalUSDValue =
-    (priceData?.data[priceData?.data.length - 1].value || 0) * Number(amount);
+    ((priceData?.data[priceData?.data.length - 1].value || 0) * amount) /
+    10 ** (selectedIndex?.decimals || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -54,7 +57,11 @@ export function UnwrapTab() {
   const calculateOutputs = () => {
     return composition!.map((comp) => ({
       token: mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0],
-      amount: ((amount * comp.percentage) / 100).toFixed(6),
+      amount: (
+        ((Number(amount) / 10 ** (selectedIndex?.decimals || 0)) *
+          comp.percentage) /
+        100
+      ).toFixed(6),
     }));
   };
 
@@ -159,36 +166,47 @@ export function UnwrapTab() {
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Amount to Unwrap</label>
                 <span className="text-sm text-muted-foreground">
-                  Balance: {selectedIndex?.amount} {selectedIndex?.symbol}
+                  Balance: {Number(selectedIndex?.amount) || 0}{" "}
+                  {selectedIndex?.symbol}
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <Slider
-                    value={[amount]}
-                    max={Number(selectedIndex?.amount || 0)}
-                    step={0.01}
-                    onValueChange={(values) => setAmount(values[0])}
+                    value={[Number(amount)]}
+                    max={
+                      Number(selectedIndex?.amount || 0) *
+                      10 ** (selectedIndex?.decimals || 0)
+                    }
+                    step={1}
+                    onValueChange={(value) => setAmount(value[0])}
                   />
                 </div>
                 <div className="w-20">
                   <input
                     type="number"
-                    value={amount}
+                    value={
+                      Number(amount) / 10 ** (selectedIndex?.decimals || 0)
+                    }
                     onChange={(e) => {
                       const value = Number.parseFloat(e.target.value);
                       if (
                         !isNaN(value) &&
                         value >= 0 &&
-                        value <= Number(selectedIndex?.amount || 0)
+                        value <=
+                          Number(selectedIndex?.amount || 0) /
+                            10 ** (selectedIndex?.decimals || 0)
                       ) {
-                        setAmount(value);
+                        setAmount(value * 10 ** (selectedIndex?.decimals || 0));
                       }
                     }}
                     className="w-full p-2 rounded-md border bg-transparent text-right"
-                    min="0"
-                    max={Number(selectedIndex?.amount || 0)}
-                    step="0.01"
+                    min={0}
+                    max={
+                      Number(selectedIndex?.amount || 0) /
+                      10 ** (selectedIndex?.decimals || 0)
+                    }
+                    step={1 / 10 ** (selectedIndex?.decimals || 0)}
                   />
                 </div>
               </div>
@@ -240,11 +258,7 @@ export function UnwrapTab() {
                       <div className="text-right">
                         <div className="font-medium">{output.amount}</div>
                         <div className="text-xs text-muted-foreground">
-                          ≈{" "}
-                          {formatCurrency(
-                            Number.parseFloat(output.amount) * 20
-                          )}{" "}
-                          {/* Simplified price calculation */}
+                          ≈ {formatCurrency(Number.parseFloat(output.amount))}{" "}
                         </div>
                       </div>
                     </div>
