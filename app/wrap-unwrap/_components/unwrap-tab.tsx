@@ -26,12 +26,16 @@ import { useAddressBalance } from "@/lib/alchemy/getAddressBalance";
 import { TokenData } from "@/lib/alchemy/getAddressBalance";
 import { useIndexComposition } from "@/lib/hooks/useIndexComposition";
 import { useAggregatePrice } from "@/lib/prices";
+import { ethers } from "ethers";
+import { useUser } from "@account-kit/react";
+
 export function UnwrapTab() {
   const {
     tokens,
     isLoading: isLoadingAddressBalance,
     error: errorAddressBalance,
   } = useAddressBalance();
+  const user = useUser();
   const indexes = tokens.filter((token) => token.isIndex);
   const [selectedIndex, setSelectedIndex] = useState<TokenData>(indexes[0]);
   const { composition } = useIndexComposition(selectedIndex?.tokenAddress);
@@ -52,6 +56,7 @@ export function UnwrapTab() {
     10 ** (selectedIndex?.decimals || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Calculate output tokens based on index composition
   const calculateOutputs = () => {
@@ -66,20 +71,91 @@ export function UnwrapTab() {
   };
 
   // Handle unwrap action
-  const handleUnwrap = () => {
-    setIsSubmitting(true);
+  const handleUnwrap = async () => {
+    if (!user?.address) {
+      setErrorMessage("Please connect your wallet first");
+      return;
+    }
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      // Get provider from window.ethereum
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      // Convert amount to big number (in wei)
+      const unwrapAmount = ethers.utils.parseUnits(
+        (amount / 10 ** (selectedIndex?.decimals || 0)).toString(),
+        selectedIndex?.decimals || 18
+      );
+
+      // Get index token contract
+      if (!selectedIndex?.tokenAddress) {
+        throw new Error("Index token address not found");
+      }
+
+      const indexContract = new ethers.Contract(
+        selectedIndex.tokenAddress,
+        [
+          "function balanceOf(address) view returns (uint256)",
+          "function approve(address, uint256) returns (bool)",
+          "function unwrap(uint256) returns (bool)",
+        ],
+        signer
+      );
+
+      // Check user balance
+      const balance = await indexContract.balanceOf(user.address);
+      if (balance.lt(unwrapAmount)) {
+        throw new Error(
+          `Insufficient balance. Required: ${ethers.utils.formatUnits(
+            unwrapAmount,
+            selectedIndex?.decimals || 18
+          )}, Available: ${ethers.utils.formatUnits(
+            balance,
+            selectedIndex?.decimals || 18
+          )}`
+        );
+      }
+
+      // Approve index tokens for unwrap
+      console.log(
+        `Approving ${ethers.utils.formatUnits(
+          unwrapAmount,
+          selectedIndex?.decimals || 18
+        )} ${selectedIndex.symbol} for unwrap`
+      );
+      const approveTx = await indexContract.approve(
+        selectedIndex.tokenAddress,
+        unwrapAmount
+      );
+      await approveTx.wait();
+
+      // Execute unwrap
+      console.log(
+        `Unwrapping ${ethers.utils.formatUnits(
+          unwrapAmount,
+          selectedIndex?.decimals || 18
+        )} ${selectedIndex.symbol}`
+      );
+      const unwrapTx = await indexContract.unwrap(unwrapAmount, {
+        gasLimit: 500000,
+      });
+      await unwrapTx.wait();
+
+      // Success
       setIsSuccess(true);
 
-      // Reset after success
-      setTimeout(() => {
-        setIsSuccess(false);
-        setAmount(1);
-      }, 3000);
-    }, 2000);
+      setIsSuccess(false);
+      setAmount(0);
+    } catch (error: any) {
+      console.error("Unwrap error:", error);
+      setErrorMessage(error.message || "Failed to unwrap tokens");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const outputs = calculateOutputs();
