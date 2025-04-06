@@ -45,7 +45,8 @@ export function getStaticIndexData(): IndexToken[] {
     indexesInstance = [
       {
         id: "zidx-blue",
-        address: "0x827586715f039bC6133d6D39Edbf8044bB32bA22",
+        address: process.env
+          .NEXT_PUBLIC_INDEX_TOKEN_ADDRESS_ZIDX_BLUE as `0x${string}`,
         name: "Blue Chip",
         symbol: "ZIDX-TOTAL-BLUE-MOCK",
         type: "token",
@@ -55,10 +56,28 @@ export function getStaticIndexData(): IndexToken[] {
         volume24h: 1250000,
         performance7d: 2.1,
         performance30d: 12.3,
+        composition: [
+          {
+            token: "BTC",
+            percentage: 34,
+            address: process.env.NEXT_PUBLIC_BTC_TOKEN_ADDRESS as `0x${string}`,
+          },
+          {
+            token: "ETH",
+            percentage: 33,
+            address: process.env.NEXT_PUBLIC_ETH_TOKEN_ADDRESS as `0x${string}`,
+          },
+          {
+            token: "DOGE",
+            percentage: 33,
+            address: process.env
+              .NEXT_PUBLIC_DOGE_TOKEN_ADDRESS as `0x${string}`,
+          },
+        ],
       },
     ];
   }
-  
+
   return indexesInstance;
 }
 

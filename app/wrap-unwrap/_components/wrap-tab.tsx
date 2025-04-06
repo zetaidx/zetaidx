@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { mockIndexes, mockTokens } from "@/lib/mock-data";
+import { mockTokens } from "@/lib/mock-data";
+import { getStaticIndexData } from "@/lib/indexes-data";
 import type { IndexToken, Token } from "@/lib/types";
+import { ethers } from "ethers";
+import { useUser } from "@account-kit/react";
 
 interface TokenInputRowProps {
   token: Token;
@@ -69,22 +72,29 @@ function TokenInputRow({
 }
 
 export function WrapTab() {
-  const [selectedIndex, setSelectedIndex] = useState<IndexToken>(
-    mockIndexes[0]
-  );
+  const indexes = getStaticIndexData();
+  const user = useUser();
+
+  const [selectedIndex, setSelectedIndex] = useState<IndexToken>(indexes[0]);
   const [desiredAmount, setDesiredAmount] = useState<string>("");
   const [tokenInputs, setTokenInputs] = useState<
     { token: Token; amount: string }[]
   >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Initialize token inputs when index changes
   useEffect(() => {
-    const inputs = selectedIndex.composition!.map((comp) => ({
-      token: mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0],
-      amount: "",
-    }));
+    const inputs =
+      selectedIndex.composition?.map((comp) => {
+        // Find the token from mock data using symbol
+        const token = mockTokens.find((t) => t.symbol === comp.token);
+        return {
+          token,
+          amount: "",
+        };
+      }) || [];
     setTokenInputs(inputs);
   }, [selectedIndex]);
 
@@ -96,15 +106,11 @@ export function WrapTab() {
       return;
     }
 
-    // Simplified calculation - in reality would use actual token prices and ratios
-    const baseValue = numAmount * 20; // Assuming 1 index token = $20 worth of assets
+    const baseValue = numAmount;
     const newInputs = tokenInputs.map((input, index) => {
-      const percentage = selectedIndex.composition![index].percentage;
+      const percentage = selectedIndex.composition?.[index].percentage || 0;
       const requiredValue = (baseValue * percentage) / 100;
-      const tokenAmount = input.token.price
-        ? (requiredValue / input.token.price).toFixed(6)
-        : "0";
-      return { ...input, amount: tokenAmount };
+      return { ...input, amount: requiredValue.toString() };
     });
     setTokenInputs(newInputs);
   };
@@ -116,25 +122,94 @@ export function WrapTab() {
   };
 
   // Handle wrap action
-  const handleWrap = () => {
+  const handleWrap = async () => {
+    if (!user?.address) {
+      setErrorMessage("Please connect your wallet first");
+      return;
+    }
+
     setIsSubmitting(true);
+    setErrorMessage(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Get provider from window.ethereum
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      // Convert desired amount to big number (in wei)
+      const amount = ethers.utils.parseEther(desiredAmount);
+
+      // Get token contracts from the composition
+      for (let i = 0; i < (selectedIndex.composition?.length || 0); i++) {
+        const comp = selectedIndex.composition?.[i];
+        if (!comp || !comp.address) {
+          throw new Error(`Missing token address for ${comp?.token}`);
+        }
+
+        // Calculate amount needed for this token
+        const tokenPercentage = comp.percentage;
+        const tokenAmount = amount.mul(tokenPercentage).div(100);
+
+        // Get token contract
+        const tokenContract = new ethers.Contract(
+          comp.address,
+          [
+            "function balanceOf(address) view returns (uint256)",
+            "function approve(address, uint256) returns (bool)",
+          ],
+          signer
+        );
+
+        // Check user balance
+        const balance = await tokenContract.balanceOf(user.address);
+        if (balance.lt(tokenAmount)) {
+          throw new Error(
+            `Insufficient balance for ${
+              comp.token
+            }. Required: ${ethers.utils.formatEther(
+              tokenAmount
+            )}, Available: ${ethers.utils.formatEther(balance)}`
+          );
+        }
+
+        // Approve token spend
+        console.log(
+          `Approving ${ethers.utils.formatEther(tokenAmount)} ${comp.token}`
+        );
+        const approveTx = await tokenContract.approve(
+          selectedIndex.address,
+          tokenAmount
+        );
+        await approveTx.wait();
+      }
+
+      // Get index token contract and call wrap
+      if (!selectedIndex.address) {
+        throw new Error("Index token address not found");
+      }
+
+      const indexContract = new ethers.Contract(
+        selectedIndex.address,
+        ["function wrap(uint256) returns (bool)"],
+        signer
+      );
+
+      // Execute wrap
+      const wrapTx = await indexContract.wrap(amount, { gasLimit: 500000 });
+      await wrapTx.wait();
+
+      // Success
       setIsSuccess(true);
-
-      // Reset after success
-      setTimeout(() => {
-        setIsSuccess(false);
-        setDesiredAmount("");
-        setTokenInputs(tokenInputs.map((input) => ({ ...input, amount: "" })));
-      }, 3000);
-    }, 2000);
+    } catch (error: any) {
+      console.error("Wrap error:", error);
+      setErrorMessage(error.message || "Failed to wrap tokens");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Check if form is valid
-  const isFormValid = Number.parseFloat(desiredAmount) > 0;
+  const isFormValid = Number.parseFloat(desiredAmount) > 0 && !!user?.address;
 
   return (
     <Card>
@@ -152,7 +227,7 @@ export function WrapTab() {
           <Select
             value={selectedIndex.id}
             onValueChange={(value) => {
-              const index = mockIndexes.find((i) => i.id === value);
+              const index = indexes.find((i) => i.id === value);
               if (index) setSelectedIndex(index);
             }}
           >
@@ -160,7 +235,7 @@ export function WrapTab() {
               <SelectValue placeholder="Select an index" />
             </SelectTrigger>
             <SelectContent>
-              {mockIndexes.map((index) => (
+              {indexes.map((index) => (
                 <SelectItem key={index.id} value={index.id}>
                   {index.name} ({index.symbol})
                 </SelectItem>
@@ -178,7 +253,7 @@ export function WrapTab() {
           </label>
           <div className="flex items-center gap-2 p-3 rounded-md border">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary flex items-center justify-center text-primary text-xs font-bold">
-              {selectedIndex.symbol.substring(5, 7)}
+              {selectedIndex.symbol?.substring(0, 2)}
             </div>
             <div className="flex-1">
               <div className="font-medium">{selectedIndex.symbol}</div>
@@ -208,7 +283,7 @@ export function WrapTab() {
                 key={index}
                 token={input.token}
                 amount={input.amount}
-                percentage={selectedIndex.composition![index].percentage}
+                percentage={selectedIndex.composition?.[index].percentage || 0}
                 onAmountChange={() => {}}
                 onRemove={() => {}}
                 isRemovable={false}
@@ -216,6 +291,11 @@ export function WrapTab() {
             ))}
           </div>
         </div>
+
+        {/* Error message */}
+        {errorMessage && (
+          <div className="text-red-500 text-sm">{errorMessage}</div>
+        )}
       </CardContent>
       <CardFooter>
         <Button

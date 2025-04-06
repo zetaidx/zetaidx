@@ -71,6 +71,13 @@ export const mockTokens: any[] = [
     price: 10.0,
     type: "token",
   },
+  {
+    id: "btc",
+    name: "Bitcoin",
+    symbol: "BTC",
+    price: 50000.0,
+    type: "token",
+  },
 ];
 
 export const mockIndexes: IndexToken[] = [
