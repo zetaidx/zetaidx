@@ -34,8 +34,8 @@ export function UnwrapTab() {
   } = useAddressBalance();
   const indexes = tokens.filter((token) => token.isIndex);
   const [selectedIndex, setSelectedIndex] = useState<TokenData>(indexes[0]);
-  const { composition } = useIndexComposition(selectedIndex.tokenAddress);
-  const [amount, setAmount] = useState<number>(1);
+  const { composition } = useIndexComposition(selectedIndex?.tokenAddress);
+  const [amount, setAmount] = useState<number>(Number(selectedIndex?.amount));
   const {
     data: priceData,
     isLoading: isPriceLoading,
