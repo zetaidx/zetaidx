@@ -9,6 +9,7 @@ export interface Token {
 export interface TokenComposition {
   token: string;
   percentage: number;
+  address?: `0x${string}`;
 }
 
 export interface IndexToken extends Token {
