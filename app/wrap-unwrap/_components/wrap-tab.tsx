@@ -173,7 +173,7 @@ export function WrapTab() {
 
         // Get token decimals once
         const decimals = await tokenContract.decimals();
-        
+
         // Adjust amount for decimals
         const adjustedAmount = adjustForDecimals(tokenAmount, decimals);
 
@@ -192,7 +192,9 @@ export function WrapTab() {
 
         // Approve token spend
         console.log(
-          `Approving ${ethers.utils.formatUnits(adjustedAmount, decimals)} ${comp.token}`
+          `Approving ${ethers.utils.formatUnits(adjustedAmount, decimals)} ${
+            comp.token
+          }`
         );
         const approveTx = await tokenContract.approve(
           selectedIndex.address,
