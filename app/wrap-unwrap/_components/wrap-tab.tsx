@@ -140,7 +140,7 @@ export function WrapTab() {
       const amount = ethers.utils.parseEther(desiredAmount);
 
       // Get token contracts from the composition
-      for (let i = 0; i < (selectedIndex.composition?.length || 0); i++) {
+      for (const comp of selectedIndex.composition || []) {
         const comp = selectedIndex.composition?.[i];
         if (!comp || !comp.address) {
           throw new Error(`Missing token address for ${comp?.token}`);
