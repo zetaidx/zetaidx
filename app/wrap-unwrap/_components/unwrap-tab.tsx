@@ -105,6 +105,7 @@ export function UnwrapTab() {
         [
           "function balanceOf(address) view returns (uint256)",
           "function approve(address, uint256) returns (bool)",
+          "function allowance(address, address) view returns (uint256)",
           "function unwrap(uint256) returns (bool)",
         ],
         signer
@@ -123,17 +124,22 @@ export function UnwrapTab() {
         );
       }
 
-      console.log(
-        `Approving ${ethers.utils.formatUnits(
-          unwrapAmount,
-          selectedIndex?.decimals || 18
-        )} ${selectedIndex.symbol} for unwrap`
+      const currentAllowance = await indexContract.allowance(
+        user.address,
+        selectedIndex.tokenAddress
       );
-      const approveTx = await indexContract.approve(
-        selectedIndex.tokenAddress,
-        unwrapAmount
-      );
-      await approveTx.wait();
+
+      const MAX_UINT256 = ethers.constants.MaxUint256;
+      if (currentAllowance.lt(MAX_UINT256)) {
+        console.log(`Approving infinite ${selectedIndex.symbol} for unwrap`);
+        const approveTx = await indexContract.approve(
+          selectedIndex.tokenAddress,
+          MAX_UINT256
+        );
+        await approveTx.wait();
+      } else {
+        console.log(`Infinite allowance already set for ${selectedIndex.symbol}`);
+      }
 
       console.log(
         `Unwrapping ${ethers.utils.formatUnits(

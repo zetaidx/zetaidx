@@ -196,23 +196,17 @@ export function WrapTab() {
           selectedIndex.address
         );
 
-        // Only approve if current allowance is less than required amount
-        if (currentAllowance.lt(adjustedAmount)) {
-          console.log(
-            `Approving ${ethers.utils.formatUnits(adjustedAmount, decimals)} ${comp.token}`
-          );
+        // Use infinite approval (max uint256)
+        const MAX_UINT256 = ethers.constants.MaxUint256;
+        if (currentAllowance.lt(MAX_UINT256)) {
+          console.log(`Approving infinite ${comp.token} for wrap`);
           const approveTx = await tokenContract.approve(
             selectedIndex.address,
-            adjustedAmount
+            MAX_UINT256
           );
           await approveTx.wait();
         } else {
-          console.log(
-            `Sufficient allowance for ${comp.token}: ${ethers.utils.formatUnits(
-              currentAllowance,
-              decimals
-            )}`
-          );
+          console.log(`Infinite allowance already set for ${comp.token}`);
         }
       }
 
