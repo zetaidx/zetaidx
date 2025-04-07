@@ -243,10 +243,8 @@ export function UnwrapTab() {
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Amount to Unwrap</label>
                 <span className="text-sm text-muted-foreground">
-                  Balance: {Number(ethers.utils.formatUnits(
-                    selectedIndex?.amount || 0,
-                    selectedIndex?.decimals || 18
-                  )).toFixed(6)} {selectedIndex?.symbol}
+                  Balance: {Number(selectedIndex?.amount) || 0}{" "}
+                  {selectedIndex?.symbol}
                 </span>
               </div>
               <div className="flex items-center gap-4">
