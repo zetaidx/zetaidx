@@ -40,7 +40,7 @@ export function UnwrapTab() {
   const [selectedIndex, setSelectedIndex] = useState<TokenData>(indexes[0]);
   const { composition } = useIndexComposition(selectedIndex?.tokenAddress);
   const [amount, setAmount] = useState<number>(
-    Number(selectedIndex?.amount) * 10 ** (selectedIndex?.decimals || 0)
+    Number(selectedIndex?.amount) || 0
   );
   const {
     data: priceData,
@@ -53,24 +53,31 @@ export function UnwrapTab() {
   });
   const totalUSDValue =
     ((priceData?.data[priceData?.data.length - 1].value || 0) * amount) /
-    10 ** (selectedIndex?.decimals || 0);
+    10 ** (selectedIndex?.decimals || 18);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Calculate output tokens based on index composition
   const calculateOutputs = () => {
-    return composition!.map((comp) => ({
-      token: mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0],
-      amount: (
-        ((Number(amount) / 10 ** (selectedIndex?.decimals || 0)) *
-          comp.percentage) /
-        100
-      ).toFixed(6),
-    }));
+    return composition!.map((comp) => {
+      const token = mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0];
+      const tokenAmount = (amount * comp.percentage) / 100;
+      return {
+        token,
+        amount: tokenAmount.toString(),
+      };
+    });
   };
 
-  // Handle unwrap action
+  const handleAmountChange = (value: string) => {
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 0) {
+      setAmount(0);
+      return;
+    }
+    setAmount(numValue);
+  };
+
   const handleUnwrap = async () => {
     if (!user?.address) {
       setErrorMessage("Please connect your wallet first");
@@ -81,17 +88,14 @@ export function UnwrapTab() {
     setErrorMessage(null);
 
     try {
-      // Get provider from window.ethereum
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
 
-      // Convert amount to big number (in wei)
       const unwrapAmount = ethers.utils.parseUnits(
-        (amount / 10 ** (selectedIndex?.decimals || 0)).toString(),
+        amount.toString(),
         selectedIndex?.decimals || 18
       );
 
-      // Get index token contract
       if (!selectedIndex?.tokenAddress) {
         throw new Error("Index token address not found");
       }
@@ -101,12 +105,12 @@ export function UnwrapTab() {
         [
           "function balanceOf(address) view returns (uint256)",
           "function approve(address, uint256) returns (bool)",
+          "function allowance(address, address) view returns (uint256)",
           "function unwrap(uint256) returns (bool)",
         ],
         signer
       );
 
-      // Check user balance
       const balance = await indexContract.balanceOf(user.address);
       if (balance.lt(unwrapAmount)) {
         throw new Error(
@@ -120,20 +124,23 @@ export function UnwrapTab() {
         );
       }
 
-      // Approve index tokens for unwrap
-      console.log(
-        `Approving ${ethers.utils.formatUnits(
-          unwrapAmount,
-          selectedIndex?.decimals || 18
-        )} ${selectedIndex.symbol} for unwrap`
+      const currentAllowance = await indexContract.allowance(
+        user.address,
+        selectedIndex.tokenAddress
       );
-      const approveTx = await indexContract.approve(
-        selectedIndex.tokenAddress,
-        unwrapAmount
-      );
-      await approveTx.wait();
 
-      // Execute unwrap
+      const MAX_UINT256 = ethers.constants.MaxUint256;
+      if (currentAllowance.lt(MAX_UINT256)) {
+        console.log(`Approving infinite ${selectedIndex.symbol} for unwrap`);
+        const approveTx = await indexContract.approve(
+          selectedIndex.tokenAddress,
+          MAX_UINT256
+        );
+        await approveTx.wait();
+      } else {
+        console.log(`Infinite allowance already set for ${selectedIndex.symbol}`);
+      }
+
       console.log(
         `Unwrapping ${ethers.utils.formatUnits(
           unwrapAmount,
@@ -145,11 +152,7 @@ export function UnwrapTab() {
       });
       await unwrapTx.wait();
 
-      // Success
       setIsSuccess(true);
-
-      setIsSuccess(false);
-      setAmount(0);
     } catch (error: any) {
       console.error("Unwrap error:", error);
       setErrorMessage(error.message || "Failed to unwrap tokens");
@@ -211,7 +214,6 @@ export function UnwrapTab() {
           </div>
         ) : (
           <>
-            {/* Index Selection */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Select Index Token</label>
               <Select
@@ -237,7 +239,6 @@ export function UnwrapTab() {
               </Select>
             </div>
 
-            {/* Amount Input */}
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Amount to Unwrap</label>
@@ -249,40 +250,21 @@ export function UnwrapTab() {
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <Slider
-                    value={[Number(amount)]}
-                    max={
-                      Number(selectedIndex?.amount || 0) *
-                      10 ** (selectedIndex?.decimals || 0)
-                    }
-                    step={1}
-                    onValueChange={(value) => setAmount(value[0])}
+                    value={[amount]}
+                    max={Number(selectedIndex?.amount || 0)}
+                    step={0.01}
+                    onValueChange={(values) => setAmount(values[0])}
                   />
                 </div>
                 <div className="w-20">
                   <input
                     type="number"
-                    value={
-                      Number(amount) / 10 ** (selectedIndex?.decimals || 0)
-                    }
-                    onChange={(e) => {
-                      const value = Number.parseFloat(e.target.value);
-                      if (
-                        !isNaN(value) &&
-                        value >= 0 &&
-                        value <=
-                          Number(selectedIndex?.amount || 0) /
-                            10 ** (selectedIndex?.decimals || 0)
-                      ) {
-                        setAmount(value * 10 ** (selectedIndex?.decimals || 0));
-                      }
-                    }}
+                    value={amount}
+                    onChange={(e) => handleAmountChange(e.target.value)}
                     className="w-full p-2 rounded-md border bg-transparent text-right"
-                    min={0}
-                    max={
-                      Number(selectedIndex?.amount || 0) /
-                      10 ** (selectedIndex?.decimals || 0)
-                    }
-                    step={1 / 10 ** (selectedIndex?.decimals || 0)}
+                    min="0"
+                    max={Number(selectedIndex?.amount || 0)}
+                    step="0.01"
                   />
                 </div>
               </div>
@@ -300,7 +282,6 @@ export function UnwrapTab() {
 
             <Separator />
 
-            {/* Output Preview */}
             {isPriceLoading ? (
               <div className="flex justify-center py-4">
                 <p className="text-sm text-muted-foreground">
@@ -334,7 +315,7 @@ export function UnwrapTab() {
                       <div className="text-right">
                         <div className="font-medium">{output.amount}</div>
                         <div className="text-xs text-muted-foreground">
-                          ≈ {formatCurrency(Number.parseFloat(output.amount))}{" "}
+                          ≈ {formatCurrency(Number(output.amount) * 20)}
                         </div>
                       </div>
                     </div>
