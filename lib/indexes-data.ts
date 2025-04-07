@@ -132,7 +132,11 @@ export async function fetchIndexComposition(
 export async function getIndexComposition(
   indexId: string
 ): Promise<TokenComposition[]> {
-  const indexData = getStaticIndexData().find((index) => index.id === indexId);
+  const indexData = getStaticIndexData().find(
+    (index) =>
+      index.id === indexId ||
+      index.address?.toLowerCase() === indexId.toLowerCase()
+  );
 
   if (!indexData?.address) {
     return indexData?.composition || [];
