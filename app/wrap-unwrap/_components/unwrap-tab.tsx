@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,9 +39,7 @@ export function UnwrapTab() {
   const indexes = tokens.filter((token) => token.isIndex);
   const [selectedIndex, setSelectedIndex] = useState<TokenData>(indexes[0]);
   const { composition } = useIndexComposition(selectedIndex?.tokenAddress);
-  const [amount, setAmount] = useState<number>(
-    Number(selectedIndex?.amount) || 0
-  );
+  const [amount, setAmount] = useState<string>("0");
   const {
     data: priceData,
     isLoading: isPriceLoading,
@@ -52,7 +50,7 @@ export function UnwrapTab() {
     interval: "24h",
   });
   const totalUSDValue =
-    ((priceData?.data[priceData?.data.length - 1].value || 0) * amount) /
+    ((priceData?.data[priceData?.data.length - 1].value || 0) * Number(amount)) /
     10 ** (selectedIndex?.decimals || 18);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -61,7 +59,7 @@ export function UnwrapTab() {
   const calculateOutputs = () => {
     return composition!.map((comp) => {
       const token = mockTokens.find((t) => t.symbol === comp.token) || mockTokens[0];
-      const tokenAmount = (amount * comp.percentage) / 100;
+      const tokenAmount = (Number(amount) * comp.percentage) / 100;
       return {
         token,
         amount: tokenAmount.toString(),
@@ -70,12 +68,25 @@ export function UnwrapTab() {
   };
 
   const handleAmountChange = (value: string) => {
-    const numValue = Number(value);
-    if (isNaN(numValue) || numValue < 0) {
-      setAmount(0);
-      return;
-    }
-    setAmount(numValue);
+    if (!selectedIndex) return;
+    
+    const sanitizedValue = value.replace(/[^0-9.]/g, '');
+    
+    const parts = sanitizedValue.split('.');
+    if (parts.length > 2) return;
+    
+    if (parts[1] && parts[1].length > selectedIndex.decimals) return;
+    
+    setAmount(sanitizedValue);
+  };
+
+  const handleMaxClick = () => {
+    if (!selectedIndex?.amount) return;
+    setAmount(formattedBalance);
+  };
+
+  const handleSliderChange = (values: number[]) => {
+    setAmount(values[0].toString());
   };
 
   const handleUnwrap = async () => {
@@ -92,7 +103,7 @@ export function UnwrapTab() {
       const signer = provider.getSigner();
 
       const unwrapAmount = ethers.utils.parseUnits(
-        amount.toString(),
+        amount,
         selectedIndex?.decimals || 18
       );
 
@@ -162,6 +173,11 @@ export function UnwrapTab() {
   };
 
   const outputs = calculateOutputs();
+
+  const formattedBalance = useMemo(() => {
+    if (!selectedIndex?.amount) return "0";
+    return ethers.utils.formatUnits(selectedIndex.amount, selectedIndex.decimals);
+  }, [selectedIndex]);
 
   return (
     <Card>
@@ -243,30 +259,25 @@ export function UnwrapTab() {
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Amount to Unwrap</label>
                 <span className="text-sm text-muted-foreground">
-                  Balance: {ethers.utils.formatUnits(
-                    selectedIndex?.amount || 0,
-                    selectedIndex?.decimals || 18
-                  )} {selectedIndex?.symbol}
+                  Balance: {formattedBalance} {selectedIndex?.symbol}
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <Slider
-                    value={[amount]}
-                    max={Number(selectedIndex?.amount || 0)}
-                    step={0.01}
-                    onValueChange={(values) => setAmount(values[0])}
+                    value={[Number(amount) || 0]}
+                    max={Number(formattedBalance) || 0}
+                    step={1 / Math.pow(10, selectedIndex?.decimals || 18)}
+                    onValueChange={handleSliderChange}
                   />
                 </div>
                 <div className="w-20">
                   <input
-                    type="number"
+                    type="text"
                     value={amount}
                     onChange={(e) => handleAmountChange(e.target.value)}
                     className="w-full p-2 rounded-md border bg-transparent text-right"
-                    min="0"
-                    max={Number(selectedIndex?.amount || 0)}
-                    step="0.01"
+                    placeholder="0.0"
                   />
                 </div>
               </div>
@@ -275,7 +286,7 @@ export function UnwrapTab() {
                   variant="ghost"
                   size="sm"
                   className="text-xs text-muted-foreground hover:text-primary"
-                  onClick={() => setAmount(Number(selectedIndex?.amount || 0))}
+                  onClick={handleMaxClick}
                 >
                   MAX
                 </Button>
@@ -340,12 +351,11 @@ export function UnwrapTab() {
           className="w-full"
           size="lg"
           disabled={
-            isLoadingAddressBalance ||
-            isPriceLoading ||
+            !user?.address ||
             !!errorAddressBalance ||
             !!priceError ||
             indexes.length === 0 ||
-            amount <= 0 ||
+            amount === "0" ||
             isSubmitting ||
             isSuccess
           }
