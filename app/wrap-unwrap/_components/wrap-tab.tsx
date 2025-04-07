@@ -165,6 +165,7 @@ export function WrapTab() {
           [
             "function balanceOf(address) view returns (uint256)",
             "function approve(address, uint256) returns (bool)",
+            "function allowance(address, address) view returns (uint256)",
             "function decimals() view returns (uint8)",
           ],
           signer
@@ -172,7 +173,7 @@ export function WrapTab() {
 
         // Get token decimals once
         const decimals = await tokenContract.decimals();
-
+        
         // Adjust amount for decimals
         const adjustedAmount = adjustForDecimals(tokenAmount, decimals);
 
@@ -189,17 +190,30 @@ export function WrapTab() {
           );
         }
 
-        // Approve token spend
-        console.log(
-          `Approving ${ethers.utils.formatUnits(adjustedAmount, decimals)} ${
-            comp.token
-          }`
+        // Check current allowance
+        const currentAllowance = await tokenContract.allowance(
+          user.address,
+          selectedIndex.address
         );
-        const approveTx = await tokenContract.approve(
-          selectedIndex.address,
-          adjustedAmount
-        );
-        await approveTx.wait();
+
+        // Only approve if current allowance is less than required amount
+        if (currentAllowance.lt(adjustedAmount)) {
+          console.log(
+            `Approving ${ethers.utils.formatUnits(adjustedAmount, decimals)} ${comp.token}`
+          );
+          const approveTx = await tokenContract.approve(
+            selectedIndex.address,
+            adjustedAmount
+          );
+          await approveTx.wait();
+        } else {
+          console.log(
+            `Sufficient allowance for ${comp.token}: ${ethers.utils.formatUnits(
+              currentAllowance,
+              decimals
+            )}`
+          );
+        }
       }
 
       // Get index token contract and call wrap
